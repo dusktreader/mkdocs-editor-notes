@@ -19,9 +19,11 @@ All notes are automatically collected and displayed on a dedicated aggregator pa
 - **Multiple Note Types**: Support for `todo`, `ponder`, `improve`, and `research` notes
 - **Labeled Notes**: Optional labels for better organization (e.g., `[^todo:fix-grammar]`)
 - **Aggregator Page**: Automatic collection of all notes in one place
+- **Clickable Markers**: Single character markers (🔍 by default) that link to aggregator entries
 - **Source Linking**: Click to navigate back to note locations with paragraph highlighting
 - **Configurable Visibility**: Show or hide note markers in rendered pages
 - **Footnote-like Syntax**: Familiar syntax similar to markdown footnotes
+- **Auto-discovery**: Custom note types automatically recognized
 
 ## Quick Example
 
@@ -63,7 +65,8 @@ plugins:
 ```yaml
 plugins:
   - editor-notes:
-      show_markers: false              # Show/hide markers in source pages (default: false)
+      show_markers: true               # Show/hide markers in source pages (default: false)
+      marker_symbol: "🔍"              # Single character marker (default: 🔍)
       enable_highlighting: true        # Enable paragraph highlighting (default: true)
       aggregator_page: "editor-notes.md"  # Location of aggregator page
       note_type_emojis:                # Optional emoji overrides

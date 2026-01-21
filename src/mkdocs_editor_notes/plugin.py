@@ -318,11 +318,11 @@ function highlightTarget() {
             el.classList.add('editor-note-highlight');
             setTimeout(() => {
                 el.classList.add('editor-note-highlight-fade');
-            }, 100);
+            }, HIGHLIGHT_DURATION);
             setTimeout(() => {
                 el.classList.remove('editor-note-highlight');
                 el.classList.remove('editor-note-highlight-fade');
-            }, HIGHLIGHT_DURATION + 100);
+            }, HIGHLIGHT_DURATION + 7100);
         });
         
         // Scroll to target
@@ -336,11 +336,11 @@ function highlightTarget() {
         elementToHighlight.classList.add('editor-note-highlight');
         setTimeout(() => {
             elementToHighlight.classList.add('editor-note-highlight-fade');
-        }, 100);
+        }, HIGHLIGHT_DURATION);
         setTimeout(() => {
             elementToHighlight.classList.remove('editor-note-highlight');
             elementToHighlight.classList.remove('editor-note-highlight-fade');
-        }, HIGHLIGHT_DURATION + 100);
+        }, HIGHLIGHT_DURATION + 7100);
         // Scroll to target
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }

@@ -152,8 +152,8 @@ def test_aggregator_markdown_generation():
     md = plugin._generate_aggregator_markdown()
     
     assert "# Editor Notes" in md
-    assert "Todo (2)" in md  # Check for text, emoji may vary
-    assert "Ponder (1)" in md
+    assert "## ✅ Todo" in md  # Check for section header
+    assert "## 🤷 Ponder" in md
     assert "fix-bug" in md
     assert "question" in md
     assert "Fix the bug" in md

@@ -19,8 +19,8 @@ from mkdocs_editor_notes.models import EditorNote
 # Fixed note types with default emojis
 FIXED_NOTE_TYPES = {
     'todo': '✅',
-    'ponder': '💭',
-    'improve': '⚡',
+    'ponder': '🤷',
+    'improve': '💪',
     'research': '🔍',
 }
 
@@ -32,10 +32,9 @@ class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
-    marker_symbol = config_options.Type(str, default='🔍')
+    marker_symbol = config_options.Type(str, default='✏️')
     note_type_emojis = config_options.Type(dict, default={})
     aggregator_page = config_options.Type(str, default='editor-notes.md')
-    enable_highlighting = config_options.Type(bool, default=True)
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
@@ -99,7 +98,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             
             note_to_paragraph[note_key] = note
         
-        # Process line by line to find note references and add anchors
+        # Process line by line to find note references
         lines = markdown.split('\n')
         processed_lines = []
         
@@ -116,17 +115,15 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 note_label = ref_match.group(2)
                 note_key = f"{note_type}:{note_label}" if note_label else note_type
                 
-                # Generate paragraph ID
+                # Generate paragraph ID for this note
                 self.paragraph_counter += 1
                 paragraph_id = f"editor-note-para-{self.paragraph_counter}"
                 
-                # Set the paragraph ID for the note
+                # Set the paragraph ID and line number for the note
                 if note_key in note_to_paragraph:
                     note_to_paragraph[note_key].paragraph_id = paragraph_id
-                
-                # Add anchor to line if highlighting is enabled
-                if self.config['enable_highlighting'] and '<span id=' not in line:
-                    line = f'<span id="{paragraph_id}"></span>' + line
+                    # Store line number (approximate, based on position in file)
+                    note_to_paragraph[note_key].line_number = len(processed_lines) + 1
             
             processed_lines.append(line)
         
@@ -155,10 +152,20 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 # Generate a unique ID for this note for linking to aggregator
                 if note_key in note_to_paragraph and note_to_paragraph[note_key].paragraph_id:
                     note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
-                    # Create clickable marker with link to aggregator
-                    marker_symbol = self.config.get('marker_symbol', '🔍')
-                    aggregator_path = self.config.get('aggregator_page', 'editor-notes.md').replace('.md', '/')
-                    return f'<sup class="editor-note-marker"><a href="/{aggregator_path}#{note_id}" title="{note_type}: {note_label or ""}">{marker_symbol}</a></sup>'
+                    # Create clickable marker with link to aggregator (relative path)
+                    marker_symbol = self.config.get('marker_symbol', '✏️')
+                    # Use relative path to aggregator
+                    aggregator_path = self.config.get('aggregator_page', 'editor-notes.md').replace('.md', '')
+                    # Determine relative path from current page to aggregator
+                    # For simplicity, assume flat structure or use absolute path without leading slash
+                    source_file = page.file.src_uri
+                    if '/' in source_file:
+                        # We're in a subdirectory, go up
+                        depth = source_file.count('/')
+                        relative_path = '../' * depth + aggregator_path
+                    else:
+                        relative_path = aggregator_path
+                    return f'<sup class="editor-note-marker"><a href="{relative_path}/#{note_id}" title="{note_type}: {note_label or ""}">{marker_symbol}</a></sup>'
                 return ''
             markdown = note_ref_pattern.sub(replace_ref, markdown)
         
@@ -205,39 +212,28 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         for note_type in fixed_types:
             notes = notes_by_type[note_type]
             emoji = self._get_emoji(note_type)
-            md_parts.append(f'## {emoji} {note_type.capitalize()} ({len(notes)})')
+            md_parts.append(f'## {emoji} {note_type.capitalize()}')
             md_parts.append('')
             
             for note in notes:
                 # Add anchor for linking from markers
                 note_id = f"note-{note.paragraph_id}"
-                md_parts.append(f'<span id="{note_id}"></span>')
-                md_parts.append('<div class="editor-note-item">')
                 
-                if note.label:
-                    md_parts.append(f'<div class="editor-note-label">{note.label}</div>')
+                # Format identifier as H4 with source link
+                identifier = note.label if note.label else note_type
+                source_file = note.source_page
+                line_num = note.line_number or 0
                 
-                md_parts.append(f'<div class="editor-note-text">{note.text}</div>')
-                
-                # Add link back to source
-                source_path = note.source_page
+                # Create relative link to source
+                source_path = source_file
                 if source_path.endswith('.md'):
-                    source_path = source_path[:-3] + '.html'
-                # Handle directory-style URLs (mkdocs default)
-                if source_path.endswith('.html'):
-                    if source_path == 'index.html':
-                        source_link = f'../'
-                    else:
-                        source_link = f'../{source_path[:-5]}/'  # Remove .html, add /
-                else:
-                    source_link = f'../{source_path}'
+                    source_path = source_path[:-3]
                 
-                source_link += f'#{note.paragraph_id}'
-                
-                md_parts.append(
-                    f'<div class="editor-note-source">Source: <a href="{source_link}">{note.source_page}</a></div>'
-                )
-                md_parts.append('</div>')
+                # Format: #### identifier (source-file:line-number)
+                md_parts.append(f'<span id="{note_id}"></span>')
+                md_parts.append(f'#### [{identifier}](../{source_path}/) ([{source_file}:{line_num}](../{source_path}/))')
+                md_parts.append('')
+                md_parts.append(note.text)
                 md_parts.append('')
             
             md_parts.append('')
@@ -250,38 +246,28 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             for note_type in custom_types:
                 notes = notes_by_type[note_type]
                 emoji = self._get_emoji(note_type)
-                md_parts.append(f'### {emoji} {note_type} ({len(notes)})')
+                md_parts.append(f'### {emoji} {note_type}')
                 md_parts.append('')
                 
                 for note in notes:
                     # Add anchor for linking from markers
                     note_id = f"note-{note.paragraph_id}"
-                    md_parts.append(f'<span id="{note_id}"></span>')
-                    md_parts.append('<div class="editor-note-item">')
                     
-                    if note.label:
-                        md_parts.append(f'<div class="editor-note-label">{note.label}</div>')
+                    # Format identifier as H4 with source link
+                    identifier = note.label if note.label else note_type
+                    source_file = note.source_page
+                    line_num = note.line_number or 0
                     
-                    md_parts.append(f'<div class="editor-note-text">{note.text}</div>')
-                    
-                    # Add link back to source
-                    source_path = note.source_page
+                    # Create relative link to source
+                    source_path = source_file
                     if source_path.endswith('.md'):
-                        source_path = source_path[:-3] + '.html'
-                    if source_path.endswith('.html'):
-                        if source_path == 'index.html':
-                            source_link = f'../'
-                        else:
-                            source_link = f'../{source_path[:-5]}/'
-                    else:
-                        source_link = f'../{source_path}'
+                        source_path = source_path[:-3]
                     
-                    source_link += f'#{note.paragraph_id}'
-                    
-                    md_parts.append(
-                        f'<div class="editor-note-source">Source: <a href="{source_link}">{note.source_page}</a></div>'
-                    )
-                    md_parts.append('</div>')
+                    # Format: #### identifier (source-file:line-number)
+                    md_parts.append(f'<span id="{note_id}"></span>')
+                    md_parts.append(f'#### [{identifier}](../{source_path}/) ([{source_file}:{line_num}](../{source_path}/))')
+                    md_parts.append('')
+                    md_parts.append(note.text)
                     md_parts.append('')
                 
                 md_parts.append('')

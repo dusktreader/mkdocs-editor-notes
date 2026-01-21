@@ -115,3 +115,12 @@
 - [x] All 15 tests passing
 - [x] Test coverage at 42%
 - [x] Fixed test compatibility issues
+
+### JavaScript Highlighting (Final Fix)
+- [x] Replaced CSS-only approach with JavaScript
+- [x] Detects hash navigation on load and hashchange
+- [x] Highlights parent element for source paragraphs
+- [x] Highlights entire section for aggregator entries
+- [x] Smooth scroll to center target
+- [x] 2s yellow fade animation both directions
+- [x] Automatic cleanup of previous highlights

@@ -124,3 +124,12 @@
 - [x] Smooth scroll to center target
 - [x] 2s yellow fade animation both directions
 - [x] Automatic cleanup of previous highlights
+
+### Highlighting Duration and Structure Fix
+- [x] Increased highlight duration from 2s to 7s
+- [x] Fixed aggregator structure detection
+- [x] Now correctly finds H4 after span's parent
+- [x] Highlights H4 + all content until next note
+- [x] Stops at next note marker span to prevent over-highlighting
+- [x] Scrolls to first element in highlighted section
+- [x] Both directions (to and from aggregator) working

@@ -85,8 +85,18 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Store mapping of note refs to paragraph IDs
         note_to_paragraph = {}
         
+        # Protect code blocks by temporarily replacing them
+        code_block_pattern = re.compile(r'(```[\s\S]*?```|~~~[\s\S]*?~~~)', re.MULTILINE)
+        code_blocks = []
+        
+        def save_code_block(match):
+            code_blocks.append(match.group(0))
+            return f"<<<CODE_BLOCK_{len(code_blocks)-1}>>>"
+        
+        markdown_protected = code_block_pattern.sub(save_code_block, markdown)
+        
         # Find all note definitions and extract them
-        for match in note_def_pattern.finditer(markdown):
+        for match in note_def_pattern.finditer(markdown_protected):
             note_type = match.group(1)
             note_label = match.group(2)
             note_text = match.group(3)
@@ -106,7 +116,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             note_to_paragraph[note_key] = note
         
         # Process line by line to find note references and add anchors
-        lines = markdown.split('\n')
+        lines = markdown_protected.split('\n')
         processed_lines = []
         
         for line in lines:
@@ -177,6 +187,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 return ''
             markdown = note_ref_pattern.sub(replace_ref, markdown)
         
+        # Restore code blocks
+        for i, code_block in enumerate(code_blocks):
+            markdown = markdown.replace(f"<<<CODE_BLOCK_{i}>>>", code_block)
+        
         return markdown
 
     def on_env(self, env, config: MkDocsConfig, files: Files):
@@ -229,11 +243,17 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     position: relative;
 }
 /* Highlight targeted paragraphs */
-:target {
+span[id^="editor-note-para"]:target {
+    display: inline-block;
     background-color: #ffeb3b;
-    padding: 8px;
-    margin: -8px;
-    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    border-radius: 2px;
+    animation: highlight-fade 2s ease-out forwards;
+}
+/* Also highlight if the parent element is targeted */
+*:target {
+    background-color: #ffeb3b;
     animation: highlight-fade 2s ease-out forwards;
 }
 @keyframes highlight-fade {

@@ -5,7 +5,7 @@ This page aggregates all editor notes found throughout the documentation.
 ## 💡 Improve
 
 <span id="note-editor-note-para-2"></span>
-#### [icons](../index/) ([index.md:16](../index/))
+#### [icons](../) ([index.md:16](../))
 
 Add visual icons for different note types
 
@@ -25,15 +25,15 @@ Consider adding optional deadline/priority metadata
 Add specific error types and better messages
 
 
-## 🤷 Ponder
+## 💭 Ponder
 
 <span id="note-editor-note-para-3"></span>
-#### [accessibility](../index/) ([index.md:20](../index/))
+#### [accessibility](../) ([index.md:20](../))
 
 Ensure highlighting meets accessibility standards
 
 <span id="note-editor-note-para-6"></span>
-#### [performance](../index/) ([index.md:34](../index/))
+#### [performance](../) ([index.md:34](../))
 
 Should we benchmark with larger datasets?
 
@@ -79,12 +79,12 @@ Research python-markdown alternatives
 ## ✅ Todo
 
 <span id="note-editor-note-para-1"></span>
-#### [update-readme](../index/) ([index.md:8](../index/))
+#### [update-readme](../) ([index.md:8](../))
 
 Update the main README.md with examples
 
 <span id="note-editor-note-para-5"></span>
-#### [polish](../index/) ([index.md:30](../index/))
+#### [polish](../) ([index.md:30](../))
 
 Add error handling and tests
 
@@ -137,7 +137,7 @@ Investigate why this renders incorrectly in Safari
 ### ❓ question
 
 <span id="note-editor-note-para-4"></span>
-#### [config-validation](../index/) ([index.md:21](../index/))
+#### [config-validation](../) ([index.md:21](../))
 
 Should we validate custom note type names?
 

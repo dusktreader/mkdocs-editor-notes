@@ -19,8 +19,8 @@ from mkdocs_editor_notes.models import EditorNote
 # Fixed note types with default emojis
 FIXED_NOTE_TYPES = {
     'todo': '✅',
-    'ponder': '🤷',
-    'improve': '💪',
+    'ponder': '💭',
+    'improve': '⚙️',
     'research': '🔍',
 }
 
@@ -224,14 +224,20 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 source_file = note.source_page
                 line_num = note.line_number or 0
                 
-                # Create relative link to source
+                # Create relative link to source (handle index.md specially)
                 source_path = source_file
                 if source_path.endswith('.md'):
                     source_path = source_path[:-3]
                 
+                # For index.md, link to parent directory
+                if source_path == 'index':
+                    link_path = '../'
+                else:
+                    link_path = f'../{source_path}/'
+                
                 # Format: #### identifier (source-file:line-number)
                 md_parts.append(f'<span id="{note_id}"></span>')
-                md_parts.append(f'#### [{identifier}](../{source_path}/) ([{source_file}:{line_num}](../{source_path}/))')
+                md_parts.append(f'#### [{identifier}]({link_path}) ([{source_file}:{line_num}]({link_path}))')
                 md_parts.append('')
                 md_parts.append(note.text)
                 md_parts.append('')
@@ -258,14 +264,20 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     source_file = note.source_page
                     line_num = note.line_number or 0
                     
-                    # Create relative link to source
+                    # Create relative link to source (handle index.md specially)
                     source_path = source_file
                     if source_path.endswith('.md'):
                         source_path = source_path[:-3]
                     
+                    # For index.md, link to parent directory
+                    if source_path == 'index':
+                        link_path = '../'
+                    else:
+                        link_path = f'../{source_path}/'
+                    
                     # Format: #### identifier (source-file:line-number)
                     md_parts.append(f'<span id="{note_id}"></span>')
-                    md_parts.append(f'#### [{identifier}](../{source_path}/) ([{source_file}:{line_num}](../{source_path}/))')
+                    md_parts.append(f'#### [{identifier}]({link_path}) ([{source_file}:{line_num}]({link_path}))')
                     md_parts.append('')
                     md_parts.append(note.text)
                     md_parts.append('')

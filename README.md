@@ -69,7 +69,7 @@ plugins:
       marker_symbol: "✏️"              # Single character marker (default: ✏️)
       aggregator_page: "editor-notes.md"  # Location of aggregator page
       note_type_emojis:                # Optional emoji overrides
-        improve: "💡"                  # Override default 💪
+        improve: "💡"                  # Override default ⚙️
         question: "❓"                 # Custom type emoji
         bug: "🐛"                      # Custom type emoji
 ```
@@ -79,8 +79,8 @@ plugins:
 The plugin includes four fixed note types with default emojis:
 
 - ✅ **todo** - Tasks that need to be completed
-- 🤷 **ponder** - Questions or considerations
-- 💪 **improve** - Improvement suggestions
+- 💭 **ponder** - Questions or considerations
+- ⚙️ **improve** - Improvement suggestions
 - 🔍 **research** - Research tasks
 
 ### Custom Note Types

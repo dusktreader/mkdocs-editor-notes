@@ -256,7 +256,7 @@ span[id^="note-editor-note-para"]:target {
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;
-    transition: background-color 2s ease-out;
+    transition: background-color 7s ease-out;
 }
 .editor-note-highlight-fade {
     background-color: transparent;
@@ -283,21 +283,36 @@ function highlightTarget() {
     
     // Determine what to highlight based on the ID
     let elementToHighlight = null;
+    const HIGHLIGHT_DURATION = 7000; // 7 seconds
     
     if (target.id.startsWith('editor-note-para')) {
         // Highlighting source paragraph - get parent element
         elementToHighlight = target.parentElement;
     } else if (target.id.startsWith('note-editor-note-para')) {
-        // Highlighting aggregator section - get the whole section
-        // Find the H4 and highlight until the next H4 or H2
-        let current = target.nextElementSibling;
+        // Highlighting aggregator section
+        // The structure is: <p><span id="..."></span></p> <h4>...</h4> <p>content</p>
+        // Find the H4 that comes after the span's parent
+        let current = target.parentElement.nextElementSibling;
         const elements = [];
-        while (current && !current.matches('h2, h4')) {
-            if (current.matches('h4, p, ul, ol, pre, blockquote')) {
+        
+        // Add the H4 itself
+        if (current && current.matches('h4')) {
+            elements.push(current);
+            current = current.nextElementSibling;
+        }
+        
+        // Add all content until the next H4, H3, or H2
+        while (current && !current.matches('h2, h3, h4, p > span[id^="note-editor-note-para"]')) {
+            // Skip empty paragraphs with just spans
+            if (current.matches('p') && current.querySelector('span[id^="note-editor-note-para"]')) {
+                break;
+            }
+            if (current.matches('p, ul, ol, pre, blockquote, div')) {
                 elements.push(current);
             }
             current = current.nextElementSibling;
         }
+        
         // Apply highlight to all elements in the section
         elements.forEach(el => {
             el.classList.add('editor-note-highlight');
@@ -307,8 +322,13 @@ function highlightTarget() {
             setTimeout(() => {
                 el.classList.remove('editor-note-highlight');
                 el.classList.remove('editor-note-highlight-fade');
-            }, 2100);
+            }, HIGHLIGHT_DURATION + 100);
         });
+        
+        // Scroll to target
+        if (elements.length > 0) {
+            elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         return;
     }
     
@@ -320,7 +340,7 @@ function highlightTarget() {
         setTimeout(() => {
             elementToHighlight.classList.remove('editor-note-highlight');
             elementToHighlight.classList.remove('editor-note-highlight-fade');
-        }, 2100);
+        }, HIGHLIGHT_DURATION + 100);
         // Scroll to target
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }

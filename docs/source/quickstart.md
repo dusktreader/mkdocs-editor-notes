@@ -83,4 +83,4 @@ We could use a different markdown parser.[^research:parser-options]
 
 ### Viewing Editor Notes
 
-All editor notes are automatically collected and aggregated into a single page at `/editor-notes.html` in your built site.
+All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to `/editor-notes/` to view all notes grouped by type with links back to their source locations.

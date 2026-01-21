@@ -35,12 +35,14 @@ Labels make it easier to identify specific notes in the aggregator page and prov
 
 ## Aggregator Page
 
-All notes are automatically collected into a single aggregator page:
+All notes are automatically collected into a single aggregator page at `/editor-notes/`:
 
 - Notes are grouped by type
 - Each note shows its label (if provided)
 - Links back to the source location  
 - Source paragraph is highlighted when navigating from aggregator[^research:highlight-methods]
+
+The aggregator page is generated during the build and can be accessed by navigating directly to `/editor-notes/` in your browser.
 
 [^research:highlight-methods]: Research best practices for scroll-to-highlight UX
 

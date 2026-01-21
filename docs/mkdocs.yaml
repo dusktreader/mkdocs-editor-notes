@@ -34,7 +34,6 @@ nav:
   - Quickstart: quickstart.md
   - Features: features.md
   - Reference: reference.md
-  - Editor Notes: ../editor-notes/index.html
 plugins:
   editor-notes:
     show_markers: false

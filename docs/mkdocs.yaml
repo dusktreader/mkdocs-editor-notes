@@ -35,6 +35,9 @@ nav:
   - Features: features.md
   - Reference: reference.md
 plugins:
+  editor-notes:
+    show_markers: true
+    enable_highlighting: true
   search:
     lang: en
   mkdocstrings:

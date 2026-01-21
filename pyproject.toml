@@ -1,0 +1,90 @@
+[project]
+name = "mkdocs-editor-notes"
+version = "0.1.0"
+description = "Provides a page of editor's notes gathered from annotated document files."
+authors = [
+    {name = "Tucker Beck", email ="tucker.beck@gmail.com"},
+]
+readme = "README.md"
+license-files = ["LICENSE.md"]
+
+requires-python = ">=3.12, ~=3.14"
+dependencies = []
+
+
+[project.urls]
+homepage = "https://github.com/dusktreader/mkdocs-editor-notes"
+source = "https://github.com/dusktreader/mkdocs-editor-notes"
+changelog = "https://github.com/dusktreader/mkdocs-editor-notes/blob/main/CHANGELOG.md"
+
+
+[dependency-groups]
+dev = [
+    "basedpyright~=1.28",
+    "ipython~=8.18",
+    "mkdocs-material~=9.6",
+    "mkdocstrings[python]~=0.29",
+    "mypy~=1.15",
+    "pyclean~=3.1",
+    "pygments~=2.19",
+    "pytest~=8.3",
+    "pytest-cov~=6.0",
+    "pytest-pretty~=1.2",
+    "pytest-random-order~=1.1",
+    "ruff~=0.11",
+    "typos~=1.31",
+]
+
+
+[tool.uv]
+package = true
+
+
+[tool.pytest.ini_options]
+addopts = [
+    "--random-order",
+    "--cov=src/mkdocs_editor_notes",
+    "--cov-report=term-missing",
+    "--cov-fail-under=85",
+    "--cov-report=xml:.coverage.xml",
+    "--junitxml=.junit.xml",
+    "--override-ini=junit_family=legacy",
+]
+
+
+[tool.ruff]
+line-length = 120
+src = ["src/mkdocs_editor_notes", "tests"]
+
+
+[tool.ruff.format]
+docstring-code-format = true
+
+
+[tool.mypy]
+pretty = true
+files = ["src/mkdocs_editor_notes", "tests"]
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
+
+[tool.basedpyright]
+reportAny = false
+reportExplicitAny = false
+reportUnusedCallResult = false
+
+
+[tool.typos.default]
+extend-ignore-identifiers-re = []
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_editor_notes"]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

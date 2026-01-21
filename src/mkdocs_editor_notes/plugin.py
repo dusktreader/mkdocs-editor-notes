@@ -32,6 +32,7 @@ class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
+    marker_symbol = config_options.Type(str, default='🔍')
     note_type_emojis = config_options.Type(dict, default={})
     aggregator_page = config_options.Type(str, default='editor-notes.md')
     enable_highlighting = config_options.Type(bool, default=True)
@@ -145,51 +146,41 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         if not self.config['show_markers']:
             markdown = note_ref_pattern.sub('', markdown)
         else:
-            # Replace with styled markers
+            # Replace with clickable markers linking to aggregator
             def replace_ref(match):
                 note_type = match.group(1)
                 note_label = match.group(2)
-                label_text = f":{note_label}" if note_label else ""
-                return f'<sup class="editor-note-marker editor-note-{note_type}">[{note_type}{label_text}]</sup>'
+                note_key = f"{note_type}:{note_label}" if note_label else note_type
+                
+                # Generate a unique ID for this note for linking to aggregator
+                if note_key in note_to_paragraph and note_to_paragraph[note_key].paragraph_id:
+                    note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
+                    # Create clickable marker with link to aggregator
+                    marker_symbol = self.config.get('marker_symbol', '🔍')
+                    aggregator_path = self.config.get('aggregator_page', 'editor-notes.md').replace('.md', '/')
+                    return f'<sup class="editor-note-marker"><a href="/{aggregator_path}#{note_id}" title="{note_type}: {note_label or ""}">{marker_symbol}</a></sup>'
+                return ''
             markdown = note_ref_pattern.sub(replace_ref, markdown)
         
         return markdown
 
+    def on_env(self, env, config: MkDocsConfig, files: Files):
+        """Write aggregator markdown file after pages are processed but before rendering."""
+        # This runs after on_page_markdown for all pages, so we have all notes
+        if self.notes:
+            # Generate the aggregator page as markdown
+            aggregator_md = self._generate_aggregator_markdown()
+            
+            # Write markdown file to docs directory
+            docs_dir = Path(config['docs_dir'])
+            aggregator_file = docs_dir / self.config['aggregator_page']
+            aggregator_file.write_text(aggregator_md)
+        
+        return env
+
     def on_post_build(self, config: MkDocsConfig) -> None:
-        """Generate the aggregator page markdown file."""
-        if not self.notes:
-            return
-        
-        # Generate the aggregator page as markdown
-        aggregator_md = self._generate_aggregator_markdown()
-        
-        # Write the markdown file to site directory as HTML (manually rendered)
-        site_dir = Path(config['site_dir'])
-        aggregator_html_file = site_dir / self.config['aggregator_page'].replace('.md', '/index.html')
-        aggregator_html_file.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Wrap in basic HTML template (will be themed on next build if added to nav)
-        html_content = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Notes - {config['site_name']}</title>
-    <link rel="stylesheet" href="../assets/stylesheets/main.css">
-    <style>
-{self._get_inline_css()}
-    </style>
-</head>
-<body>
-<div class="md-content" data-md-component="content">
-<article class="md-content__inner md-typeset">
-{self._markdown_to_html(aggregator_md)}
-</article>
-</div>
-</body>
-</html>"""
-        
-        aggregator_html_file.write_text(html_content)
+        """Cleanup after build."""
+        pass
 
     def _generate_aggregator_markdown(self) -> str:
         """Generate markdown content for the aggregator page."""
@@ -218,6 +209,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             md_parts.append('')
             
             for note in notes:
+                # Add anchor for linking from markers
+                note_id = f"note-{note.paragraph_id}"
+                md_parts.append(f'<span id="{note_id}"></span>')
                 md_parts.append('<div class="editor-note-item">')
                 
                 if note.label:
@@ -260,6 +254,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 md_parts.append('')
                 
                 for note in notes:
+                    # Add anchor for linking from markers
+                    note_id = f"note-{note.paragraph_id}"
+                    md_parts.append(f'<span id="{note_id}"></span>')
                     md_parts.append('<div class="editor-note-item">')
                     
                     if note.label:

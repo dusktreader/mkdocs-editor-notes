@@ -19,17 +19,19 @@ from mkdocs_editor_notes.models import EditorNote
 # Fixed note types with default emojis
 FIXED_NOTE_TYPES = {
     'todo': '✅',
-    'ponder': '🤔',
+    'ponder': '💭',
     'improve': '⚡',
     'research': '🔍',
 }
+
+# Default emoji for custom note types
+DEFAULT_CUSTOM_EMOJI = '❗'
 
 
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
-    custom_note_types = config_options.Type(list, default=[])
     note_type_emojis = config_options.Type(dict, default={})
     aggregator_page = config_options.Type(str, default='editor-notes.md')
     enable_highlighting = config_options.Type(bool, default=True)
@@ -51,17 +53,17 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         self.note_type_emojis.update(self.config.get('note_type_emojis', {}))
         return config
     
-    def _get_all_note_types(self) -> list[str]:
-        """Get all valid note types (fixed + custom)."""
-        return list(FIXED_NOTE_TYPES.keys()) + self.config.get('custom_note_types', [])
-    
     def _is_fixed_type(self, note_type: str) -> bool:
         """Check if note type is a fixed/built-in type."""
         return note_type in FIXED_NOTE_TYPES
     
     def _get_emoji(self, note_type: str) -> str:
         """Get emoji for a note type."""
-        return self.note_type_emojis.get(note_type, '📝')
+        # Check if user has specified an emoji
+        if note_type in self.note_type_emojis:
+            return self.note_type_emojis[note_type]
+        # Use default for custom types
+        return DEFAULT_CUSTOM_EMOJI
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""

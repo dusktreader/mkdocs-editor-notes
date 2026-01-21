@@ -66,11 +66,7 @@ plugins:
       show_markers: false              # Show/hide markers in source pages (default: false)
       enable_highlighting: true        # Enable paragraph highlighting (default: true)
       aggregator_page: "editor-notes.md"  # Location of aggregator page
-      custom_note_types:               # Define custom note types (optional)
-        - question
-        - bug
-        - idea
-      note_type_emojis:                # Override or define emojis (optional)
+      note_type_emojis:                # Optional emoji overrides
         improve: "💡"                  # Override default ⚡
         question: "❓"                 # Custom type emoji
         bug: "🐛"                      # Custom type emoji
@@ -81,17 +77,27 @@ plugins:
 The plugin includes four fixed note types with default emojis:
 
 - ✅ **todo** - Tasks that need to be completed
-- 🤔 **ponder** - Questions or considerations
-- ⚡ **improve** - Improvement suggestions (can be overridden with 💡 or other emoji)
+- 💭 **ponder** - Questions or considerations
+- ⚡ **improve** - Improvement suggestions
 - 🔍 **research** - Research tasks
 
 ### Custom Note Types
 
-- Define your own note types with `custom_note_types`
+Any note type that isn't one of the four fixed types is automatically treated as a custom type:
+
+- No configuration needed - just use them in your markdown
 - Must be lowercase with hyphens (kebab-case)
 - Custom notes appear in a separate "Custom Notes" section at the bottom of the aggregator page
-- Assign emojis with `note_type_emojis` (defaults to 📝 if not specified)
-- You can also override the default emojis for built-in types
+- Use ❗ as the default emoji (customizable via `note_type_emojis`)
+
+**Example:**
+```markdown
+Is this a bug?[^bug:rendering]
+
+[^bug:rendering]: Check rendering in Safari
+```
+
+The `bug` type is automatically recognized and will appear in the Custom Notes section with ❗ emoji (or your custom emoji if specified).
 
 
 ## Syntax

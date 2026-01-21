@@ -13,42 +13,43 @@ The plugin supports four fixed note types with default emojis:[^bug:emoji-render
 [^bug:emoji-rendering]: Test emoji rendering across different browsers
 
 - **✅ todo**: Tasks that need to be completed
-- **🤔 ponder**: Questions or considerations
+- **💭 ponder**: Questions or considerations
 - **⚡ improve**: Improvement suggestions  
 - **🔍 research**: Research tasks
 
 ### Custom Note Types
 
-You can define your own note types in your `mkdocs.yml`:
+Any note type that is not one of the fixed types above is automatically treated as a custom type. Custom note types:
 
-```yaml
-plugins:
-  - editor-notes:
-      custom_note_types:
-        - question
-        - bug
-        - idea
-      note_type_emojis:
-        question: "❓"
-        bug: "🐛"
-        idea: "💡"
-```
-
-Custom note types:
-- Must be lowercase with hyphens (kebab-case)
+- Can be any lowercase text with hyphens (kebab-case)
+- Are discovered automatically during aggregation (no need to configure)
 - Appear in a "Custom Notes" section at the bottom of the aggregator page
-- Can have custom emojis specified
-- Default to 📝 if no emoji is specified
+- Use ❗ as the default emoji
 
-You can also override the default emojis for built-in types:
+You can specify emojis for any note type (fixed or custom) in your `mkdocs.yml`:
 
 ```yaml
 plugins:
   - editor-notes:
       note_type_emojis:
-        improve: "💡"  # Override default ⚡
-        todo: "📋"     # Override default ✅
+        question: "❓"      # Custom type with custom emoji
+        bug: "🐛"           # Custom type with custom emoji
+        improve: "💡"       # Override default ⚡ for built-in type
 ```
+
+**Example custom note usage:**
+
+```markdown
+Is this a bug?[^bug:rendering]
+
+[^bug:rendering]: Check rendering in Safari
+
+What about this?[^question:scaling]
+
+[^question:scaling]: Will this scale to 1000 users?
+```
+
+Both `bug` and `question` are automatically recognized as custom types and will appear in the aggregator.
 
 ## Labeled Notes
 

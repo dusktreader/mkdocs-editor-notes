@@ -38,9 +38,6 @@ plugins:
   editor-notes:
     show_markers: true
     enable_highlighting: true
-    custom_note_types:
-      - question
-      - bug
     note_type_emojis:
       question: "❓"
       bug: "🐛"

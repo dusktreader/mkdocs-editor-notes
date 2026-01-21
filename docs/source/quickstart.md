@@ -83,7 +83,7 @@ We could use a different markdown parser.[^research:parser-options]
 
 #### Custom Note Types
 
-You can define your own note types:[^question:custom-examples]
+You can use any note type you want - they're automatically discovered:[^question:custom-examples]
 
 [^question:custom-examples]: Should we add more custom type examples?
 
@@ -91,7 +91,13 @@ You can define your own note types:[^question:custom-examples]
 This might be a bug.[^bug:rendering-issue]
 
 [^bug:rendering-issue]: Investigate why this renders incorrectly in Safari
+
+I have a question about this.[^question:performance]
+
+[^question:performance]: Will this approach scale?
 ```
+
+Custom types like `bug` and `question` automatically appear in a "Custom Notes" section with ❗ emoji by default.
 
 ### Viewing Editor Notes
 

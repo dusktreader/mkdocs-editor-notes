@@ -139,7 +139,7 @@ def test_note_reference_replacement():
 def test_aggregator_markdown_generation():
     """Test aggregator markdown generation."""
     plugin = EditorNotesPlugin()
-    plugin.config = {'note_type_emojis': {}, 'custom_note_types': []}
+    plugin.config = {'note_type_emojis': {}}
     plugin.on_config({})  # Initialize emojis
     
     # Add some test notes

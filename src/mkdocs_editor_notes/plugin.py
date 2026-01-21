@@ -244,23 +244,92 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 }
 /* Highlight targeted paragraphs */
 span[id^="editor-note-para"]:target {
-    display: inline-block;
-    background-color: #ffeb3b;
-    padding: 2px 4px;
-    margin: -2px -4px;
-    border-radius: 2px;
-    animation: highlight-fade 2s ease-out forwards;
+    display: inline;
 }
-/* Also highlight if the parent element is targeted */
-*:target {
+/* Highlight parent of targeted anchor */
+span[id^="editor-note-para"]:target,
+span[id^="note-editor-note-para"]:target {
+    animation: none;
+}
+.editor-note-highlight {
     background-color: #ffeb3b;
-    animation: highlight-fade 2s ease-out forwards;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+    transition: background-color 2s ease-out;
+}
+.editor-note-highlight-fade {
+    background-color: transparent;
 }
 @keyframes highlight-fade {
     0% { background-color: #ffeb3b; }
     100% { background-color: transparent; }
 }
 </style>
+<script>
+// Highlight paragraphs when navigating to anchors
+function highlightTarget() {
+    // Remove any existing highlights
+    document.querySelectorAll('.editor-note-highlight').forEach(el => {
+        el.classList.remove('editor-note-highlight');
+        el.classList.remove('editor-note-highlight-fade');
+    });
+    
+    const hash = window.location.hash;
+    if (!hash) return;
+    
+    const target = document.querySelector(hash);
+    if (!target) return;
+    
+    // Determine what to highlight based on the ID
+    let elementToHighlight = null;
+    
+    if (target.id.startsWith('editor-note-para')) {
+        // Highlighting source paragraph - get parent element
+        elementToHighlight = target.parentElement;
+    } else if (target.id.startsWith('note-editor-note-para')) {
+        // Highlighting aggregator section - get the whole section
+        // Find the H4 and highlight until the next H4 or H2
+        let current = target.nextElementSibling;
+        const elements = [];
+        while (current && !current.matches('h2, h4')) {
+            if (current.matches('h4, p, ul, ol, pre, blockquote')) {
+                elements.push(current);
+            }
+            current = current.nextElementSibling;
+        }
+        // Apply highlight to all elements in the section
+        elements.forEach(el => {
+            el.classList.add('editor-note-highlight');
+            setTimeout(() => {
+                el.classList.add('editor-note-highlight-fade');
+            }, 100);
+            setTimeout(() => {
+                el.classList.remove('editor-note-highlight');
+                el.classList.remove('editor-note-highlight-fade');
+            }, 2100);
+        });
+        return;
+    }
+    
+    if (elementToHighlight) {
+        elementToHighlight.classList.add('editor-note-highlight');
+        setTimeout(() => {
+            elementToHighlight.classList.add('editor-note-highlight-fade');
+        }, 100);
+        setTimeout(() => {
+            elementToHighlight.classList.remove('editor-note-highlight');
+            elementToHighlight.classList.remove('editor-note-highlight-fade');
+        }, 2100);
+        // Scroll to target
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// Run on page load and hash change
+window.addEventListener('load', highlightTarget);
+window.addEventListener('hashchange', highlightTarget);
+</script>
 """
         # Inject before </head>
         if '</head>' in output:

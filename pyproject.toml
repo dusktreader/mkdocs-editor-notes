@@ -9,13 +9,20 @@ readme = "README.md"
 license-files = ["LICENSE.md"]
 
 requires-python = ">=3.12, ~=3.14"
-dependencies = []
+dependencies = [
+    "mkdocs>=1.5.0",
+    "markdown>=3.4.0",
+]
 
 
 [project.urls]
 homepage = "https://github.com/dusktreader/mkdocs-editor-notes"
 source = "https://github.com/dusktreader/mkdocs-editor-notes"
 changelog = "https://github.com/dusktreader/mkdocs-editor-notes/blob/main/CHANGELOG.md"
+
+
+[project.entry-points."mkdocs.plugins"]
+editor-notes = "mkdocs_editor_notes.plugin:EditorNotesPlugin"
 
 
 [dependency-groups]

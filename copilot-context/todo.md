@@ -1,59 +1,32 @@
 # TODO List
 
 ## Table of Contents
-1. [Phase 1: Core Parsing](#phase-1-core-parsing)
-2. [Phase 2: Note Collection](#phase-2-note-collection)
-3. [Phase 3: Aggregator Page](#phase-3-aggregator-page)
-4. [Phase 4: Highlighting & Navigation](#phase-4-highlighting--navigation)
-5. [Phase 5: Configuration](#phase-5-configuration)
-6. [Phase 6: Documentation](#phase-6-documentation)
-7. [Phase 7: Testing](#phase-7-testing)
+1. [Remaining Tasks](#remaining-tasks)
+2. [Future Enhancements](#future-enhancements)
 
-## Phase 1: Core Parsing
-- [ ] Create markdown extension class
-- [ ] Implement pattern matching for editor note syntax
-- [ ] Parse note type and optional label
-- [ ] Extract note text/content
-- [ ] Store notes with metadata
+## Remaining Tasks
 
-## Phase 2: Note Collection
-- [ ] Implement MkDocs plugin class
-- [ ] Hook into page processing events
-- [ ] Collect notes from all pages during build
-- [ ] Generate unique paragraph/anchor IDs
-- [ ] Store page context with each note
+### Documentation
+- [ ] Update main README.md with plugin examples
+- [ ] Add navigation link to aggregator page in mkdocs.yaml
+- [ ] Add screenshots/GIFs showing highlighting in action
 
-## Phase 3: Aggregator Page
-- [ ] Create aggregator page generator
-- [ ] Group notes by type
-- [ ] Format notes with links to source
-- [ ] Add page to navigation
-- [ ] Handle empty notes case
+### Polish
+- [ ] Add type icons/emoji for different note types in aggregator  
+- [ ] Make highlight CSS configurable via theme variables
+- [ ] Test with different mkdocs themes
 
-## Phase 4: Highlighting & Navigation
-- [ ] Add anchor IDs to paragraphs containing notes
-- [ ] Implement CSS for :target highlighting
-- [ ] Test navigation and highlighting
-- [ ] Handle edge cases (multiple notes per paragraph)
+### Optional Improvements
+- [ ] Support for custom note types via configuration
+- [ ] Support for note metadata (priority, deadline, assignee)
+- [ ] Export notes to JSON/CSV
+- [ ] Integration with issue tracking systems
+- [ ] Search/filter functionality in aggregator page
 
-## Phase 5: Configuration
-- [ ] Add configuration schema
-- [ ] Implement show/hide markers option
-- [ ] Allow custom note types
-- [ ] Configure aggregator page location
-- [ ] Add enable/disable highlighting option
-
-## Phase 6: Documentation
-- [ ] Update quickstart.md with usage examples
-- [ ] Update features.md with feature details
-- [ ] Update reference.md with API documentation
-- [ ] Add editor notes to docs as examples
-- [ ] Update index.md with overview
-
-## Phase 7: Testing
-- [ ] Write tests for markdown extension
-- [ ] Write tests for plugin
-- [ ] Write tests for note collection
-- [ ] Write tests for aggregator page generation
-- [ ] Test highlighting functionality
-- [ ] Integration tests
+## Future Enhancements
+- [ ] Increase test coverage from 50% to 85%
+- [ ] Add integration tests with full mkdocs build
+- [ ] Add CLI for generating note reports
+- [ ] Support for multi-line note content
+- [ ] Support for note threading/replies
+- [ ] Dashboard/analytics for notes

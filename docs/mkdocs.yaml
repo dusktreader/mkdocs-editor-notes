@@ -36,8 +36,15 @@ nav:
   - Reference: reference.md
 plugins:
   editor-notes:
-    show_markers: false
+    show_markers: true
     enable_highlighting: true
+    custom_note_types:
+      - question
+      - bug
+    note_type_emojis:
+      question: "❓"
+      bug: "🐛"
+      improve: "💡"  # Override default
   search:
     lang: en
   mkdocstrings:

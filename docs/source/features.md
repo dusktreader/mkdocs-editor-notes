@@ -8,16 +8,47 @@ mkdocs-editor-notes allows you to embed editorial notes directly in your markdow
 
 ## Note Types
 
-The plugin supports multiple note types out of the box:
+The plugin supports four fixed note types with default emojis:[^bug:emoji-rendering]
 
-- **todo**: Tasks that need to be completed
-- **ponder**: Questions or considerations
-- **improve**: Improvement suggestions  
-- **research**: Research tasks
+[^bug:emoji-rendering]: Test emoji rendering across different browsers
 
-Custom note types can be configured in your `mkdocs.yml`.[^improve:custom-types]
+- **✅ todo**: Tasks that need to be completed
+- **🤔 ponder**: Questions or considerations
+- **⚡ improve**: Improvement suggestions  
+- **🔍 research**: Research tasks
 
-[^improve:custom-types]: Add example of how to configure custom note types
+### Custom Note Types
+
+You can define your own note types in your `mkdocs.yml`:
+
+```yaml
+plugins:
+  - editor-notes:
+      custom_note_types:
+        - question
+        - bug
+        - idea
+      note_type_emojis:
+        question: "❓"
+        bug: "🐛"
+        idea: "💡"
+```
+
+Custom note types:
+- Must be lowercase with hyphens (kebab-case)
+- Appear in a "Custom Notes" section at the bottom of the aggregator page
+- Can have custom emojis specified
+- Default to 📝 if no emoji is specified
+
+You can also override the default emojis for built-in types:
+
+```yaml
+plugins:
+  - editor-notes:
+      note_type_emojis:
+        improve: "💡"  # Override default ⚡
+        todo: "📋"     # Override default ✅
+```
 
 ## Labeled Notes
 

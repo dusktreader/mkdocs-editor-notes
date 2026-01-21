@@ -63,22 +63,36 @@ plugins:
 ```yaml
 plugins:
   - editor-notes:
-      show_markers: false          # Show/hide markers in source pages (default: false)
-      enable_highlighting: true    # Enable paragraph highlighting (default: true)
+      show_markers: false              # Show/hide markers in source pages (default: false)
+      enable_highlighting: true        # Enable paragraph highlighting (default: true)
       aggregator_page: "editor-notes.md"  # Location of aggregator page
-      note_types:                  # Supported note types
-        - todo
-        - ponder
-        - improve
-        - research
+      custom_note_types:               # Define custom note types (optional)
+        - question
+        - bug
+        - idea
+      note_type_emojis:                # Override or define emojis (optional)
+        improve: "💡"                  # Override default ⚡
+        question: "❓"                 # Custom type emoji
+        bug: "🐛"                      # Custom type emoji
 ```
 
-## Note Types
+### Built-in Note Types
 
-- **todo**: Tasks that need to be completed
-- **ponder**: Questions or considerations  
-- **improve**: Improvement suggestions
-- **research**: Research tasks
+The plugin includes four fixed note types with default emojis:
+
+- ✅ **todo** - Tasks that need to be completed
+- 🤔 **ponder** - Questions or considerations
+- ⚡ **improve** - Improvement suggestions (can be overridden with 💡 or other emoji)
+- 🔍 **research** - Research tasks
+
+### Custom Note Types
+
+- Define your own note types with `custom_note_types`
+- Must be lowercase with hyphens (kebab-case)
+- Custom notes appear in a separate "Custom Notes" section at the bottom of the aggregator page
+- Assign emojis with `note_type_emojis` (defaults to 📝 if not specified)
+- You can also override the default emojis for built-in types
+
 
 ## Syntax
 

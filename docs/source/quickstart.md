@@ -81,6 +81,18 @@ We could use a different markdown parser.[^research:parser-options]
 [^research:parser-options]: Research python-markdown alternatives
 ```
 
+#### Custom Note Types
+
+You can define your own note types:[^question:custom-examples]
+
+[^question:custom-examples]: Should we add more custom type examples?
+
+```markdown
+This might be a bug.[^bug:rendering-issue]
+
+[^bug:rendering-issue]: Investigate why this renders incorrectly in Safari
+```
+
 ### Viewing Editor Notes
 
 All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to `/editor-notes/` to view all notes grouped by type with links back to their source locations.

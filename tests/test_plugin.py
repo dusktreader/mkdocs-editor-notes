@@ -139,6 +139,8 @@ def test_note_reference_replacement():
 def test_aggregator_markdown_generation():
     """Test aggregator markdown generation."""
     plugin = EditorNotesPlugin()
+    plugin.config = {'note_type_emojis': {}, 'custom_note_types': []}
+    plugin.on_config({})  # Initialize emojis
     
     # Add some test notes
     plugin.notes = [
@@ -150,8 +152,8 @@ def test_aggregator_markdown_generation():
     md = plugin._generate_aggregator_markdown()
     
     assert "# Editor Notes" in md
-    assert "## Todo (2)" in md
-    assert "## Ponder (1)" in md
+    assert "Todo (2)" in md  # Check for text, emoji may vary
+    assert "Ponder (1)" in md
     assert "fix-bug" in md
     assert "question" in md
     assert "Fix the bug" in md

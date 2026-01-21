@@ -16,11 +16,21 @@ from mkdocs_editor_notes.markdown_extension import EditorNotesExtension
 from mkdocs_editor_notes.models import EditorNote
 
 
+# Fixed note types with default emojis
+FIXED_NOTE_TYPES = {
+    'todo': '✅',
+    'ponder': '🤔',
+    'improve': '⚡',
+    'research': '🔍',
+}
+
+
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
-    note_types = config_options.Type(list, default=['todo', 'ponder', 'improve', 'research'])
+    custom_note_types = config_options.Type(list, default=[])
+    note_type_emojis = config_options.Type(dict, default={})
     aggregator_page = config_options.Type(str, default='editor-notes.md')
     enable_highlighting = config_options.Type(bool, default=True)
 
@@ -32,18 +42,26 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         super().__init__()
         self.notes: list[EditorNote] = []
         self.paragraph_counter = 0
-        self.aggregator_file_added = False
-
-    def on_files(self, files: Files, config: MkDocsConfig) -> Files:
-        """Add the aggregator page to the files collection."""
-        # We'll generate the content later in on_post_page
-        # For now, just mark that we want to create it
-        return files
+        self.note_type_emojis: dict[str, str] = {}
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
-        """Add the markdown extension to the config."""
-        # Don't manually add the extension - let users do this or use on_page_markdown
+        """Setup configuration and emoji mappings."""
+        # Build complete emoji map (defaults + user overrides)
+        self.note_type_emojis = FIXED_NOTE_TYPES.copy()
+        self.note_type_emojis.update(self.config.get('note_type_emojis', {}))
         return config
+    
+    def _get_all_note_types(self) -> list[str]:
+        """Get all valid note types (fixed + custom)."""
+        return list(FIXED_NOTE_TYPES.keys()) + self.config.get('custom_note_types', [])
+    
+    def _is_fixed_type(self, note_type: str) -> bool:
+        """Check if note type is a fixed/built-in type."""
+        return note_type in FIXED_NOTE_TYPES
+    
+    def _get_emoji(self, note_type: str) -> str:
+        """Get emoji for a note type."""
+        return self.note_type_emojis.get(note_type, '📝')
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""
@@ -178,6 +196,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         for note in self.notes:
             notes_by_type.setdefault(note.note_type, []).append(note)
         
+        # Separate fixed and custom types
+        fixed_types = [t for t in sorted(notes_by_type.keys()) if self._is_fixed_type(t)]
+        custom_types = [t for t in sorted(notes_by_type.keys()) if not self._is_fixed_type(t)]
+        
         # Build markdown content
         md_parts = [
             '# Editor Notes',
@@ -186,10 +208,11 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             '',
         ]
         
-        # Add notes grouped by type
-        for note_type in sorted(notes_by_type.keys()):
+        # Add fixed note types first
+        for note_type in fixed_types:
             notes = notes_by_type[note_type]
-            md_parts.append(f'## {note_type.capitalize()} ({len(notes)})')
+            emoji = self._get_emoji(note_type)
+            md_parts.append(f'## {emoji} {note_type.capitalize()} ({len(notes)})')
             md_parts.append('')
             
             for note in notes:
@@ -222,6 +245,47 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 md_parts.append('')
             
             md_parts.append('')
+        
+        # Add custom note types at the bottom
+        if custom_types:
+            md_parts.append('## Custom Notes')
+            md_parts.append('')
+            
+            for note_type in custom_types:
+                notes = notes_by_type[note_type]
+                emoji = self._get_emoji(note_type)
+                md_parts.append(f'### {emoji} {note_type} ({len(notes)})')
+                md_parts.append('')
+                
+                for note in notes:
+                    md_parts.append('<div class="editor-note-item">')
+                    
+                    if note.label:
+                        md_parts.append(f'<div class="editor-note-label">{note.label}</div>')
+                    
+                    md_parts.append(f'<div class="editor-note-text">{note.text}</div>')
+                    
+                    # Add link back to source
+                    source_path = note.source_page
+                    if source_path.endswith('.md'):
+                        source_path = source_path[:-3] + '.html'
+                    if source_path.endswith('.html'):
+                        if source_path == 'index.html':
+                            source_link = f'../'
+                        else:
+                            source_link = f'../{source_path[:-5]}/'
+                    else:
+                        source_link = f'../{source_path}'
+                    
+                    source_link += f'#{note.paragraph_id}'
+                    
+                    md_parts.append(
+                        f'<div class="editor-note-source">Source: <a href="{source_link}">{note.source_page}</a></div>'
+                    )
+                    md_parts.append('</div>')
+                    md_parts.append('')
+                
+                md_parts.append('')
         
         return '\n'.join(md_parts)
 
@@ -286,6 +350,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         html = markdown_text
         
         # Convert headers
+        html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
         html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
         html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
         

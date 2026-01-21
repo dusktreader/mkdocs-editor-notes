@@ -18,10 +18,11 @@ All notes are automatically collected and displayed on a dedicated aggregator pa
 - **Aggregator Page**: Automatic collection of all notes in one place
 - **Source Linking**: Click to navigate back to note locations  
 - **Highlighting**: Paragraphs highlight when navigated from aggregator[^ponder:accessibility]
-- **Configurable**: Show/hide markers, custom note types, and more
+- **Configurable**: Show/hide markers, custom note types, and more[^question:config-validation]
 
 [^improve:icons]: Add visual icons for different note types
 [^ponder:accessibility]: Ensure highlighting meets accessibility standards
+[^question:config-validation]: Should we validate custom note type names?
 
 ## Quick Example
 

@@ -36,7 +36,7 @@ nav:
   - Reference: reference.md
 plugins:
   editor-notes:
-    show_markers: true
+    show_markers: false
     enable_highlighting: true
   search:
     lang: en

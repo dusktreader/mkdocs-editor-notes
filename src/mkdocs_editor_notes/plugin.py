@@ -175,17 +175,6 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         md_parts = [
             '# Editor Notes',
             '',
-            '<style>',
-            '.editor-note-item { margin: 15px 0; padding: 12px; border-left: 4px solid #2196F3; background: #f5f9ff; }',
-            '.editor-note-label { font-weight: 600; color: #1976D2; margin-bottom: 4px; }',
-            '.editor-note-text { margin: 8px 0; }',
-            '.editor-note-source { font-size: 0.9em; color: #666; margin-top: 8px; }',
-            '.editor-note-source a { color: #1976D2; text-decoration: none; }',
-            '.editor-note-source a:hover { text-decoration: underline; }',
-            ':target { background-color: #ffffcc !important; animation: highlight-fade 3s ease-out; }',
-            '@keyframes highlight-fade { from { background-color: #ffff99; } to { background-color: transparent; } }',
-            '</style>',
-            '',
             'This page aggregates all editor notes found throughout the documentation.',
             '',
         ]

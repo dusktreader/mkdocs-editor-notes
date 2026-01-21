@@ -40,61 +40,86 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""
-        # Extract notes using regex directly on the markdown source
         import re
         
         # Pattern for note definitions
         note_def_pattern = re.compile(r'^\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]:\s+(.+)$', re.MULTILINE)
         
-        # Find all note definitions
+        # Pattern for note references
+        note_ref_pattern = re.compile(r'\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]')
+        
+        # Store mapping of note refs to paragraph IDs
+        note_to_paragraph = {}
+        
+        # Find all note definitions and extract them
         for match in note_def_pattern.finditer(markdown):
             note_type = match.group(1)
             note_label = match.group(2)
             note_text = match.group(3)
             
-            # Generate a unique paragraph ID
-            self.paragraph_counter += 1
-            paragraph_id = f"editor-note-para-{self.paragraph_counter}"
+            # Create a key for this note
+            note_key = f"{note_type}:{note_label}" if note_label else note_type
             
-            # Create EditorNote object
+            # Create EditorNote object (we'll set paragraph_id later)
             note = EditorNote(
                 note_type=note_type,
                 label=note_label,
                 text=note_text,
                 source_page=page.file.src_uri,
-                paragraph_id=paragraph_id,
+                paragraph_id="",  # Will be set below
             )
             
-            self.notes.append(note)
+            note_to_paragraph[note_key] = note
         
-        # Remove note definitions from markdown if show_markers is False
-        if not self.config['show_markers']:
-            markdown = note_def_pattern.sub('', markdown)
-        
-        # Add paragraph IDs for highlighting support
-        if self.config['enable_highlighting']:
-            markdown = self._add_paragraph_anchors(markdown)
-        
-        return markdown
-
-    def _add_paragraph_anchors(self, markdown: str) -> str:
-        """Add anchor IDs to paragraphs containing editor notes."""
-        # Find lines with editor note references
+        # Process line by line to find note references and add anchors
         lines = markdown.split('\n')
-        result = []
+        processed_lines = []
         
         for line in lines:
-            # Check if line contains an editor note reference
-            if re.search(r'\[\^[a-z]+(?::[a-z0-9\-_]+)?\]', line):
-                # Add an anchor span if not already present
-                if '<span id=' not in line:
-                    self.paragraph_counter += 1
-                    anchor_id = f"editor-note-para-{self.paragraph_counter}"
-                    # Prepend anchor to the line
-                    line = f'<span id="{anchor_id}"></span>{line}'
-            result.append(line)
+            # Check if this line has a note reference
+            ref_match = note_ref_pattern.search(line)
+            if ref_match:
+                note_type = ref_match.group(1)
+                note_label = ref_match.group(2)
+                note_key = f"{note_type}:{note_label}" if note_label else note_type
+                
+                # Generate paragraph ID
+                self.paragraph_counter += 1
+                paragraph_id = f"editor-note-para-{self.paragraph_counter}"
+                
+                # Set the paragraph ID for the note
+                if note_key in note_to_paragraph:
+                    note_to_paragraph[note_key].paragraph_id = paragraph_id
+                
+                # Add anchor to line if highlighting is enabled
+                if self.config['enable_highlighting'] and '<span id=' not in line:
+                    line = f'<span id="{paragraph_id}"></span>' + line
+            
+            processed_lines.append(line)
         
-        return '\n'.join(result)
+        markdown = '\n'.join(processed_lines)
+        
+        # Add notes to collection
+        for note in note_to_paragraph.values():
+            if note.paragraph_id:  # Only add if we found a reference
+                self.notes.append(note)
+        
+        # Always remove note definitions from markdown
+        markdown = note_def_pattern.sub('', markdown)
+        
+        # Remove note references if show_markers is False
+        if not self.config['show_markers']:
+            markdown = note_ref_pattern.sub('', markdown)
+        else:
+            # Replace with styled markers
+            def replace_ref(match):
+                note_type = match.group(1)
+                note_label = match.group(2)
+                label_text = f":{note_label}" if note_label else ""
+                return f'<sup class="editor-note-marker editor-note-{note_type}">[{note_type}{label_text}]</sup>'
+            markdown = note_ref_pattern.sub(replace_ref, markdown)
+        
+        return markdown
 
     def on_post_build(self, config: MkDocsConfig) -> None:
         """Generate the aggregator page after the build."""

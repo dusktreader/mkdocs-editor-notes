@@ -393,6 +393,10 @@ wheels = [
 name = "mkdocs-editor-notes"
 version = "0.1.0"
 source = { editable = "." }
+dependencies = [
+    { name = "markdown" },
+    { name = "mkdocs" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -412,6 +416,10 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [
+    { name = "markdown", specifier = ">=3.4.0" },
+    { name = "mkdocs", specifier = ">=1.5.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [

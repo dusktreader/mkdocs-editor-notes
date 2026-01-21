@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from mkdocs.config import config_options
+from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import Files
@@ -15,7 +16,7 @@ from mkdocs_editor_notes.markdown_extension import EditorNotesExtension
 from mkdocs_editor_notes.models import EditorNote
 
 
-class EditorNotesPluginConfig:
+class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
@@ -34,45 +35,41 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Add the markdown extension to the config."""
-        # Add our custom markdown extension
-        config['markdown_extensions'] = config.get('markdown_extensions', [])
-        
-        # Configure the extension
-        extension_config = {
-            'show_markers': self.config['show_markers'],
-            'note_types': self.config['note_types'],
-        }
-        
-        # Add extension with config
-        if 'mkdocs_editor_notes.markdown_extension' not in str(config.get('markdown_extensions', [])):
-            config.setdefault('markdown_extensions', []).append(
-                {'mkdocs_editor_notes.markdown_extension': extension_config}
-            )
-        
+        # Don't manually add the extension - let users do this or use on_page_markdown
         return config
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""
-        # Parse markdown to find notes
-        md_instance = page.markdown
+        # Extract notes using regex directly on the markdown source
+        import re
         
-        # Check if notes were extracted by the extension
-        if hasattr(md_instance, 'editor_notes'):
-            for note_data in md_instance.editor_notes:
-                # Generate a unique paragraph ID
-                self.paragraph_counter += 1
-                paragraph_id = f"editor-note-para-{self.paragraph_counter}"
-                
-                # Create EditorNote object
-                note = EditorNote(
-                    note_type=note_data['type'],
-                    label=note_data.get('label'),
-                    text=note_data['text'],
-                    source_page=page.file.src_uri,
-                    paragraph_id=paragraph_id,
-                )
-                
-                self.notes.append(note)
+        # Pattern for note definitions
+        note_def_pattern = re.compile(r'^\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]:\s+(.+)$', re.MULTILINE)
+        
+        # Find all note definitions
+        for match in note_def_pattern.finditer(markdown):
+            note_type = match.group(1)
+            note_label = match.group(2)
+            note_text = match.group(3)
+            
+            # Generate a unique paragraph ID
+            self.paragraph_counter += 1
+            paragraph_id = f"editor-note-para-{self.paragraph_counter}"
+            
+            # Create EditorNote object
+            note = EditorNote(
+                note_type=note_type,
+                label=note_label,
+                text=note_text,
+                source_page=page.file.src_uri,
+                paragraph_id=paragraph_id,
+            )
+            
+            self.notes.append(note)
+        
+        # Remove note definitions from markdown if show_markers is False
+        if not self.config['show_markers']:
+            markdown = note_def_pattern.sub('', markdown)
         
         # Add paragraph IDs for highlighting support
         if self.config['enable_highlighting']:
@@ -157,7 +154,11 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 html_parts.append(f'<div class="note-text">{note.text}</div>')
                 
                 # Add link back to source
-                source_link = f'../{note.source_page}#{note.paragraph_id}'
+                # Convert .md to .html and handle directory URLs
+                source_path = note.source_page
+                if source_path.endswith('.md'):
+                    source_path = source_path[:-3] + '.html'
+                source_link = f'{source_path}#{note.paragraph_id}'
                 html_parts.append(
                     f'<div class="note-source">Source: <a href="{source_link}">{note.source_page}</a></div>'
                 )

@@ -153,7 +153,7 @@ def test_aggregator_markdown_generation():
     
     assert "# Editor Notes" in md
     assert "## ✅ Todo" in md  # Check for section header
-    assert "## 💭 Ponder" in md
+    assert "## ⏳ Ponder" in md
     assert "fix-bug" in md
     assert "question" in md
     assert "Fix the bug" in md

@@ -19,8 +19,8 @@ from mkdocs_editor_notes.models import EditorNote
 # Fixed note types with default emojis
 FIXED_NOTE_TYPES = {
     'todo': '✅',
-    'ponder': '💭',
-    'improve': '⚙️',
+    'ponder': '⏳',
+    'improve': '🛠️',
     'research': '🔍',
 }
 
@@ -32,7 +32,6 @@ class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
     show_markers = config_options.Type(bool, default=False)
-    marker_symbol = config_options.Type(str, default='✏️')
     note_type_emojis = config_options.Type(dict, default={})
     aggregator_page = config_options.Type(str, default='editor-notes.md')
 
@@ -152,12 +151,15 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 # Generate a unique ID for this note for linking to aggregator
                 if note_key in note_to_paragraph and note_to_paragraph[note_key].paragraph_id:
                     note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
-                    # Create clickable marker with link to aggregator (relative path)
-                    marker_symbol = self.config.get('marker_symbol', '✏️')
+                    # Use matching emoji for this note type
+                    marker_symbol = self._get_emoji(note_type)
+                    # Create hover text with type and label
+                    hover_text = f"{note_type}"
+                    if note_label:
+                        hover_text += f": {note_label}"
                     # Use relative path to aggregator
                     aggregator_path = self.config.get('aggregator_page', 'editor-notes.md').replace('.md', '')
                     # Determine relative path from current page to aggregator
-                    # For simplicity, assume flat structure or use absolute path without leading slash
                     source_file = page.file.src_uri
                     if '/' in source_file:
                         # We're in a subdirectory, go up
@@ -165,7 +167,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                         relative_path = '../' * depth + aggregator_path
                     else:
                         relative_path = aggregator_path
-                    return f'<sup class="editor-note-marker"><a href="{relative_path}/#{note_id}" title="{note_type}: {note_label or ""}">{marker_symbol}</a></sup>'
+                    return f'<sup class="editor-note-marker"><a href="{relative_path}/#{note_id}" title="{hover_text}">{marker_symbol}</a></sup>'
                 return ''
             markdown = note_ref_pattern.sub(replace_ref, markdown)
         
@@ -200,8 +202,12 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         fixed_types = [t for t in sorted(notes_by_type.keys()) if self._is_fixed_type(t)]
         custom_types = [t for t in sorted(notes_by_type.keys()) if not self._is_fixed_type(t)]
         
-        # Build markdown content
+        # Build markdown content with front matter to configure TOC
         md_parts = [
+            '---',
+            'toc_depth: 2',
+            '---',
+            '',
             '# Editor Notes',
             '',
             'This page aggregates all editor notes found throughout the documentation.',
@@ -229,8 +235,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 link_path = source_file
                 
                 # Format: #### identifier (source-file:line-number)
+                # Don't hyperlink the identifier, only the file reference
                 md_parts.append(f'<span id="{note_id}"></span>')
-                md_parts.append(f'#### [{identifier}]({link_path}) ([{source_file}:{line_num}]({link_path}))')
+                md_parts.append(f'#### {identifier} ([{source_file}:{line_num}]({link_path}))')
                 md_parts.append('')
                 md_parts.append(note.text)
                 md_parts.append('')
@@ -261,8 +268,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     link_path = source_file
                     
                     # Format: #### identifier (source-file:line-number)
+                    # Don't hyperlink the identifier, only the file reference
                     md_parts.append(f'<span id="{note_id}"></span>')
-                    md_parts.append(f'#### [{identifier}]({link_path}) ([{source_file}:{line_num}]({link_path}))')
+                    md_parts.append(f'#### {identifier} ([{source_file}:{line_num}]({link_path}))')
                     md_parts.append('')
                     md_parts.append(note.text)
                     md_parts.append('')

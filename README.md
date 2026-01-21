@@ -19,7 +19,7 @@ All notes are automatically collected and displayed on a dedicated aggregator pa
 - **Multiple Note Types**: Support for `todo`, `ponder`, `improve`, and `research` notes
 - **Labeled Notes**: Optional labels for better organization (e.g., `[^todo:fix-grammar]`)
 - **Aggregator Page**: Automatic collection of all notes in one place
-- **Clickable Markers**: Single character markers (✏️ by default) that link to aggregator entries
+- **Type-Matched Markers**: Each note displays with its type's emoji (✅ for todo, ⏳ for ponder, etc.)
 - **Source Linking**: Click to navigate back to note locations
 - **Configurable Visibility**: Show or hide note markers in rendered pages
 - **Footnote-like Syntax**: Familiar syntax similar to markdown footnotes
@@ -66,10 +66,9 @@ plugins:
 plugins:
   - editor-notes:
       show_markers: true               # Show/hide markers in source pages (default: false)
-      marker_symbol: "✏️"              # Single character marker (default: ✏️)
       aggregator_page: "editor-notes.md"  # Location of aggregator page
       note_type_emojis:                # Optional emoji overrides
-        improve: "💡"                  # Override default ⚙️
+        improve: "💡"                  # Override default 🛠️
         question: "❓"                 # Custom type emoji
         bug: "🐛"                      # Custom type emoji
 ```
@@ -79,8 +78,8 @@ plugins:
 The plugin includes four fixed note types with default emojis:
 
 - ✅ **todo** - Tasks that need to be completed
-- 💭 **ponder** - Questions or considerations
-- ⚙️ **improve** - Improvement suggestions
+- ⏳ **ponder** - Questions or considerations
+- 🛠️ **improve** - Improvement suggestions
 - 🔍 **research** - Research tasks
 
 ### Custom Note Types

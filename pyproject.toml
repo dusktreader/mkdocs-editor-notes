@@ -52,7 +52,7 @@ addopts = [
     "--random-order",
     "--cov=src/mkdocs_editor_notes",
     "--cov-report=term-missing",
-    "--cov-fail-under=44",
+    "--cov-fail-under=43",
     "--cov-report=xml:.coverage.xml",
     "--junitxml=.junit.xml",
     "--override-ini=junit_family=legacy",

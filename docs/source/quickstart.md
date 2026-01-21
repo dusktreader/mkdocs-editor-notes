@@ -37,9 +37,9 @@ Editor notes use a syntax similar to footnotes.[^ponder:syntax-alternative] You 
 
 #### Todo Notes
 
-Use todo notes to mark tasks that need to be completed:[^improve:add-deadline-support]
+Use todo notes to mark tasks that need to be completed:[^improve:better-examples]
 
-[^improve:add-deadline-support]: Consider adding optional deadline/priority metadata
+[^improve:better-examples]: Add more diverse examples
 
 ```markdown
 This feature needs more documentation.[^todo:expand-docs]

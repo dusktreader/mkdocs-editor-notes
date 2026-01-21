@@ -50,6 +50,14 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Build complete emoji map (defaults + user overrides)
         self.note_type_emojis = FIXED_NOTE_TYPES.copy()
         self.note_type_emojis.update(self.config.get('note_type_emojis', {}))
+        
+        # Create placeholder aggregator file if it doesn't exist
+        if 'docs_dir' in config:
+            docs_dir = Path(config['docs_dir'])
+            aggregator_file = docs_dir / self.config['aggregator_page']
+            if not aggregator_file.exists():
+                aggregator_file.write_text('# Editor Notes\n\nThis page will be generated during the build.\n')
+        
         return config
     
     def _is_fixed_type(self, note_type: str) -> bool:
@@ -97,7 +105,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             
             note_to_paragraph[note_key] = note
         
-        # Process line by line to find note references
+        # Process line by line to find note references and add anchors
         lines = markdown.split('\n')
         processed_lines = []
         
@@ -123,6 +131,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     note_to_paragraph[note_key].paragraph_id = paragraph_id
                     # Store line number (approximate, based on position in file)
                     note_to_paragraph[note_key].line_number = len(processed_lines) + 1
+                
+                # Add anchor span at the start of the line
+                if '<span id=' not in line:
+                    line = f'<span id="{paragraph_id}"></span>{line}'
             
             processed_lines.append(line)
         
@@ -151,23 +163,17 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 # Generate a unique ID for this note for linking to aggregator
                 if note_key in note_to_paragraph and note_to_paragraph[note_key].paragraph_id:
                     note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
+                    paragraph_id = note_to_paragraph[note_key].paragraph_id
                     # Use matching emoji for this note type
                     marker_symbol = self._get_emoji(note_type)
                     # Create hover text with type and label
                     hover_text = f"{note_type}"
                     if note_label:
                         hover_text += f": {note_label}"
-                    # Use relative path to aggregator
-                    aggregator_path = self.config.get('aggregator_page', 'editor-notes.md').replace('.md', '')
-                    # Determine relative path from current page to aggregator
-                    source_file = page.file.src_uri
-                    if '/' in source_file:
-                        # We're in a subdirectory, go up
-                        depth = source_file.count('/')
-                        relative_path = '../' * depth + aggregator_path
-                    else:
-                        relative_path = aggregator_path
-                    return f'<sup class="editor-note-marker"><a href="{relative_path}/#{note_id}" title="{hover_text}">{marker_symbol}</a></sup>'
+                    # Link to aggregator page using markdown format
+                    aggregator_path = self.config.get('aggregator_page', 'editor-notes.md')
+                    # Use markdown link format which MkDocs will handle correctly
+                    return f'<sup class="editor-note-marker"><a href="{aggregator_path}#{note_id}" title="{hover_text}">{marker_symbol}</a></sup>'
                 return ''
             markdown = note_ref_pattern.sub(replace_ref, markdown)
         
@@ -186,6 +192,60 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             aggregator_file.write_text(aggregator_md)
         
         return env
+
+    def on_post_page(self, output: str, page, config: MkDocsConfig) -> str:
+        """Inject CSS and fix marker links."""
+        # Fix marker links to point to proper URLs (remove .md extension)
+        aggregator_page = self.config.get('aggregator_page', 'editor-notes.md')
+        aggregator_url = aggregator_page.replace('.md', '/')
+        output = output.replace(f'href="{aggregator_page}#', f'href="{aggregator_url}#')
+        
+        # Add CSS for fast tooltips and paragraph highlighting
+        css = """
+<style>
+/* Fast tooltip display */
+.editor-note-marker a {
+    position: relative;
+}
+.editor-note-marker a[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 1000;
+    margin-bottom: 4px;
+    transition: none;
+    animation: none;
+}
+/* Remove default tooltip */
+.editor-note-marker a[title] {
+    position: relative;
+}
+/* Highlight targeted paragraphs */
+:target {
+    background-color: #ffeb3b;
+    padding: 8px;
+    margin: -8px;
+    border-radius: 4px;
+    animation: highlight-fade 2s ease-out forwards;
+}
+@keyframes highlight-fade {
+    0% { background-color: #ffeb3b; }
+    100% { background-color: transparent; }
+}
+</style>
+"""
+        # Inject before </head>
+        if '</head>' in output:
+            output = output.replace('</head>', f'{css}</head>')
+        return output
 
     def on_post_build(self, config: MkDocsConfig) -> None:
         """Cleanup after build."""
@@ -231,8 +291,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 line_num = note.line_number or 0
                 
                 # MkDocs wants links to .md files, not rendered paths
-                # So we keep the .md extension for the link
-                link_path = source_file
+                # Link to the specific paragraph anchor in the source file
+                link_path = f"{source_file}#{note.paragraph_id}"
                 
                 # Format: #### identifier (source-file:line-number)
                 # Don't hyperlink the identifier, only the file reference
@@ -264,8 +324,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     source_file = note.source_page
                     line_num = note.line_number or 0
                     
-                    # MkDocs wants links to .md files, not rendered paths
-                    link_path = source_file
+                    # Link to the specific paragraph anchor in the source file
+                    link_path = f"{source_file}#{note.paragraph_id}"
                     
                     # Format: #### identifier (source-file:line-number)
                     # Don't hyperlink the identifier, only the file reference

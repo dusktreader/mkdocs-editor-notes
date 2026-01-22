@@ -283,7 +283,8 @@ function highlightTarget() {
     
     // Determine what to highlight based on the ID
     let elementToHighlight = null;
-    const HIGHLIGHT_DURATION = 7000; // 7 seconds
+    const HIGHLIGHT_DURATION = 5000; // Stay at full color for 5 seconds
+    const FADE_DURATION = 7000; // Fade for 7 seconds
     
     if (target.id.startsWith('editor-note-para')) {
         // Highlighting source paragraph - get parent element
@@ -318,11 +319,11 @@ function highlightTarget() {
             el.classList.add('editor-note-highlight');
             setTimeout(() => {
                 el.classList.add('editor-note-highlight-fade');
-            }, 10);
+            }, HIGHLIGHT_DURATION);
             setTimeout(() => {
                 el.classList.remove('editor-note-highlight');
                 el.classList.remove('editor-note-highlight-fade');
-            }, 7100);
+            }, HIGHLIGHT_DURATION + FADE_DURATION);
         });
         
         // Scroll to target
@@ -336,11 +337,11 @@ function highlightTarget() {
         elementToHighlight.classList.add('editor-note-highlight');
         setTimeout(() => {
             elementToHighlight.classList.add('editor-note-highlight-fade');
-        }, 10);
+        }, HIGHLIGHT_DURATION);
         setTimeout(() => {
             elementToHighlight.classList.remove('editor-note-highlight');
             elementToHighlight.classList.remove('editor-note-highlight-fade');
-        }, 7100);
+        }, HIGHLIGHT_DURATION + FADE_DURATION);
         // Scroll to target
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }

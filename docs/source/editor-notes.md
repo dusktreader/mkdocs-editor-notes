@@ -113,33 +113,24 @@ Make sure the configuration example is complete
 
 ### 🐛 bug
 
-<div class="editor-note-entry" markdown="1">
+<div class="editor-note-entry">
 <span id="note-editor-note-para-6"></span>
-
-#### emoji-rendering ([features.md:11](features.md#editor-note-para-6))
-
-Test emoji rendering across different browsers
-
+<h4>emoji-rendering (<a href="features.md#editor-note-para-6">features.md:11</a>)</h4>
+<p>Test emoji rendering across different browsers</p>
 </div>
 
 
 ### ❓ question
 
-<div class="editor-note-entry" markdown="1">
+<div class="editor-note-entry">
 <span id="note-editor-note-para-4"></span>
-
-#### config-validation ([index.md:21](index.md#editor-note-para-4))
-
-Should we validate custom note type names?
-
+<h4>config-validation (<a href="index.md#editor-note-para-4">index.md:21</a>)</h4>
+<p>Should we validate custom note type names?</p>
 </div>
 
-<div class="editor-note-entry" markdown="1">
+<div class="editor-note-entry">
 <span id="note-editor-note-para-16"></span>
-
-#### custom-examples ([quickstart.md:65](quickstart.md#editor-note-para-16))
-
-Should we add more custom type examples?
-
+<h4>custom-examples (<a href="quickstart.md#editor-note-para-16">quickstart.md:65</a>)</h4>
+<p>Should we add more custom type examples?</p>
 </div>
 

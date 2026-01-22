@@ -365,12 +365,11 @@ window.addEventListener('hashchange', highlightTarget);
                 # Link to the specific paragraph anchor in the source file
                 link_path = f"{source_file}#{note.paragraph_id}"
                 
-                # Wrap entry in a div for single-rectangle highlighting
+                # Use pure HTML for the entry
                 md_parts.append(f'<div class="editor-note-entry">')
                 md_parts.append(f'<span id="{note_id}"></span>')
-                md_parts.append(f'#### {identifier} ([{source_file}:{line_num}]({link_path}))')
-                md_parts.append('')
-                md_parts.append(note.text)
+                md_parts.append(f'<h4>{identifier} (<a href="{link_path}">{source_file}:{line_num}</a>)</h4>')
+                md_parts.append(f'<p>{note.text}</p>')
                 md_parts.append('</div>')
                 md_parts.append('')
             

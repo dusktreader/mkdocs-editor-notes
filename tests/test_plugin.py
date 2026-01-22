@@ -142,8 +142,11 @@ def test_note_reference_replacement():
 
 def test_aggregator_markdown_generation():
     """Test aggregator markdown generation."""
+    from mkdocs_editor_notes.plugin import EditorNotesPluginConfig
+    
     plugin = EditorNotesPlugin()
-    plugin.config = {"note_type_emojis": {}}
+    plugin.config = EditorNotesPluginConfig()
+    plugin.config.load_dict({"note_type_emojis": {}, "aggregator_page": "editor-notes.md"})
     plugin.on_config({})  # Initialize emojis
 
     # Add some test notes

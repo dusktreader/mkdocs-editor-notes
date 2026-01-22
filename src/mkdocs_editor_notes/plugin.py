@@ -214,108 +214,25 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         aggregator_url = aggregator_page.replace('.md', '/')
         output = output.replace(f'href="{aggregator_page}#', f'href="{aggregator_url}#')
         
-        # Add CSS for fast tooltips and paragraph highlighting
-        css = """
+        # Load CSS and JS from static files
+        static_dir = Path(__file__).parent / 'static'
+        css_file = static_dir / 'editor-notes.css'
+        js_file = static_dir / 'editor-notes.js'
+        
+        css_content = css_file.read_text()
+        js_content = js_file.read_text()
+        
+        inject_content = f"""
 <style>
-/* Fast tooltip display */
-.editor-note-marker a {
-    position: relative;
-}
-.editor-note-marker a[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 4px 8px;
-    background: #333;
-    color: white;
-    font-size: 12px;
-    white-space: nowrap;
-    border-radius: 4px;
-    z-index: 1000;
-    margin-bottom: 4px;
-    transition: none;
-    animation: none;
-}
-/* Remove default tooltip */
-.editor-note-marker a[title] {
-    position: relative;
-}
-/* Highlight targeted paragraphs */
-span[id^="editor-note-para"]:target {
-    display: inline;
-}
-/* Highlight parent of targeted anchor */
-span[id^="editor-note-para"]:target,
-span[id^="note-editor-note-para"]:target {
-    animation: none;
-}
-.editor-note-highlight {
-    background-color: rgba(255, 253, 231, 0.5);
-    padding: 4px 8px;
-    margin: -4px -8px;
-    border-radius: 4px;
-}
-.editor-note-highlight-fade {
-    background-color: transparent;
-    transition: background-color 2s ease-out;
-}
-@keyframes highlight-fade {
-    0% { background-color: #ffeb3b; }
-    100% { background-color: transparent; }
-}
+{css_content}
 </style>
 <script>
-// Highlight paragraphs when navigating to anchors
-function highlightTarget() {
-    // Remove any existing highlights
-    document.querySelectorAll('.editor-note-highlight').forEach(el => {
-        el.classList.remove('editor-note-highlight');
-        el.classList.remove('editor-note-highlight-fade');
-    });
-    
-    const hash = window.location.hash;
-    if (!hash) return;
-    
-    const target = document.querySelector(hash);
-    if (!target) return;
-    
-    // Determine what to highlight based on the ID
-    let elementToHighlight = null;
-    const HIGHLIGHT_DURATION = 3000; // Stay at full color for 3 seconds
-    const FADE_DURATION = 2000; // Fade for 2 seconds
-    
-    if (target.id.startsWith('editor-note-para')) {
-        // Highlighting source paragraph - get parent element
-        elementToHighlight = target.parentElement;
-    } else if (target.id.startsWith('note-editor-note-para')) {
-        // Highlighting aggregator entry - find the containing div
-        elementToHighlight = target.closest('.editor-note-entry');
-    }
-    
-    if (elementToHighlight) {
-        elementToHighlight.classList.add('editor-note-highlight');
-        setTimeout(() => {
-            elementToHighlight.classList.add('editor-note-highlight-fade');
-        }, HIGHLIGHT_DURATION);
-        setTimeout(() => {
-            elementToHighlight.classList.remove('editor-note-highlight');
-            elementToHighlight.classList.remove('editor-note-highlight-fade');
-        }, HIGHLIGHT_DURATION + FADE_DURATION);
-        // Scroll to target
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-}
-
-// Run on page load and hash change
-window.addEventListener('load', highlightTarget);
-window.addEventListener('hashchange', highlightTarget);
+{js_content}
 </script>
 """
         # Inject before </head>
         if '</head>' in output:
-            output = output.replace('</head>', f'{css}</head>')
+            output = output.replace('</head>', f'{inject_content}</head>')
         return output
 
     def on_post_build(self, config: MkDocsConfig) -> None:

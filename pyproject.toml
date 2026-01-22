@@ -91,6 +91,9 @@ extend-ignore-identifiers-re = []
 [tool.hatch.build.targets.wheel]
 packages = ["src/mkdocs_editor_notes"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/mkdocs_editor_notes/static" = "mkdocs_editor_notes/static"
+
 
 [build-system]
 requires = ["hatchling"]

@@ -290,47 +290,8 @@ function highlightTarget() {
         // Highlighting source paragraph - get parent element
         elementToHighlight = target.parentElement;
     } else if (target.id.startsWith('note-editor-note-para')) {
-        // Highlighting aggregator section
-        // The structure is: <p><span id="..."></span></p> <h4>...</h4> <p>content</p>
-        // Find the H4 that comes after the span's parent
-        let current = target.parentElement.nextElementSibling;
-        const elements = [];
-        
-        // Add the H4 itself
-        if (current && current.matches('h4')) {
-            elements.push(current);
-            current = current.nextElementSibling;
-        }
-        
-        // Add all content until the next H4, H3, or H2
-        while (current && !current.matches('h2, h3, h4, p > span[id^="note-editor-note-para"]')) {
-            // Skip empty paragraphs with just spans
-            if (current.matches('p') && current.querySelector('span[id^="note-editor-note-para"]')) {
-                break;
-            }
-            if (current.matches('p, ul, ol, pre, blockquote, div')) {
-                elements.push(current);
-            }
-            current = current.nextElementSibling;
-        }
-        
-        // Apply highlight to all elements in the section
-        elements.forEach(el => {
-            el.classList.add('editor-note-highlight');
-            setTimeout(() => {
-                el.classList.add('editor-note-highlight-fade');
-            }, HIGHLIGHT_DURATION);
-            setTimeout(() => {
-                el.classList.remove('editor-note-highlight');
-                el.classList.remove('editor-note-highlight-fade');
-            }, HIGHLIGHT_DURATION + FADE_DURATION);
-        });
-        
-        // Scroll to target
-        if (elements.length > 0) {
-            elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
+        // Highlighting aggregator entry - find the containing div
+        elementToHighlight = target.closest('.editor-note-entry');
     }
     
     if (elementToHighlight) {
@@ -404,12 +365,13 @@ window.addEventListener('hashchange', highlightTarget);
                 # Link to the specific paragraph anchor in the source file
                 link_path = f"{source_file}#{note.paragraph_id}"
                 
-                # Format: #### identifier (source-file:line-number)
-                # Don't hyperlink the identifier, only the file reference
+                # Wrap entry in a div for single-rectangle highlighting
+                md_parts.append(f'<div class="editor-note-entry">')
                 md_parts.append(f'<span id="{note_id}"></span>')
                 md_parts.append(f'#### {identifier} ([{source_file}:{line_num}]({link_path}))')
                 md_parts.append('')
                 md_parts.append(note.text)
+                md_parts.append('</div>')
                 md_parts.append('')
             
             md_parts.append('')
@@ -437,12 +399,13 @@ window.addEventListener('hashchange', highlightTarget);
                     # Link to the specific paragraph anchor in the source file
                     link_path = f"{source_file}#{note.paragraph_id}"
                     
-                    # Format: #### identifier (source-file:line-number)
-                    # Don't hyperlink the identifier, only the file reference
+                    # Wrap entry in a div for single-rectangle highlighting
+                    md_parts.append(f'<div class="editor-note-entry">')
                     md_parts.append(f'<span id="{note_id}"></span>')
                     md_parts.append(f'#### {identifier} ([{source_file}:{line_num}]({link_path}))')
                     md_parts.append('')
                     md_parts.append(note.text)
+                    md_parts.append('</div>')
                     md_parts.append('')
                 
                 md_parts.append('')

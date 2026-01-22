@@ -1,7 +1,6 @@
 """MkDocs plugin for aggregating editor notes."""
 
 import hashlib
-import re
 from pathlib import Path
 from typing import Any
 
@@ -12,19 +11,14 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import Files, File
 from mkdocs.structure.pages import Page
 
+from mkdocs_editor_notes.constants import (
+    FIXED_NOTE_TYPES,
+    DEFAULT_CUSTOM_EMOJI,
+    NOTE_DEF_PATTERN,
+    NOTE_REF_PATTERN,
+    CODE_BLOCK_PATTERN,
+)
 from mkdocs_editor_notes.models import EditorNote
-
-
-# Fixed note types with default emojis
-FIXED_NOTE_TYPES = {
-    'todo': '✅',
-    'ponder': '⏳',
-    'improve': '🛠️',
-    'research': '🔍',
-}
-
-# Default emoji for custom note types
-DEFAULT_CUSTOM_EMOJI = '❗'
 
 
 class EditorNotesPluginConfig(Config):
@@ -73,29 +67,20 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""
-        import re
-        
-        # Pattern for note definitions
-        note_def_pattern = re.compile(r'^\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]:\s+(.+)$', re.MULTILINE)
-        
-        # Pattern for note references
-        note_ref_pattern = re.compile(r'\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]')
-        
         # Store mapping of note refs to paragraph IDs
         note_to_paragraph = {}
         
         # Protect code blocks by temporarily replacing them
-        code_block_pattern = re.compile(r'(```[\s\S]*?```|~~~[\s\S]*?~~~)', re.MULTILINE)
         code_blocks = []
         
         def save_code_block(match):
             code_blocks.append(match.group(0))
             return f"<<<CODE_BLOCK_{len(code_blocks)-1}>>>"
         
-        markdown_protected = code_block_pattern.sub(save_code_block, markdown)
+        markdown_protected = CODE_BLOCK_PATTERN.sub(save_code_block, markdown)
         
         # Find all note definitions and extract them
-        for match in note_def_pattern.finditer(markdown_protected):
+        for match in NOTE_DEF_PATTERN.finditer(markdown_protected):
             note_type = match.group(1)
             note_label = match.group(2)
             note_text = match.group(3)
@@ -120,12 +105,12 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         
         for line in lines:
             # Skip note definition lines (they'll be removed later)
-            if note_def_pattern.match(line):
+            if NOTE_DEF_PATTERN.match(line):
                 processed_lines.append(line)
                 continue
             
             # Check if this line has a note reference
-            ref_match = note_ref_pattern.search(line)
+            ref_match = NOTE_REF_PATTERN.search(line)
             if ref_match:
                 note_type = ref_match.group(1)
                 note_label = ref_match.group(2)
@@ -155,13 +140,14 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 self.notes.append(note)
         
         # Always remove note definitions from markdown (including the newline)
-        markdown = note_def_pattern.sub('', markdown)
+        markdown = NOTE_DEF_PATTERN.sub('', markdown)
         # Clean up any double newlines left behind
+        import re
         markdown = re.sub(r'\n\n\n+', '\n\n', markdown)
         
         # Remove note references if show_markers is False
         if not self.config['show_markers']:
-            markdown = note_ref_pattern.sub('', markdown)
+            markdown = NOTE_REF_PATTERN.sub('', markdown)
         else:
             # Replace with clickable markers linking to aggregator
             def replace_ref(match):
@@ -184,7 +170,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     # Use markdown link format which MkDocs will handle correctly
                     return f'<sup class="editor-note-marker"><a href="{aggregator_path}#{note_id}" title="{hover_text}">{marker_symbol}</a></sup>'
                 return ''
-            markdown = note_ref_pattern.sub(replace_ref, markdown)
+            markdown = NOTE_REF_PATTERN.sub(replace_ref, markdown)
         
         # Restore code blocks
         for i, code_block in enumerate(code_blocks):

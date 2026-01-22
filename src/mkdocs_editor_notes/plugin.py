@@ -6,6 +6,7 @@ from typing import Any
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
+from mkdocs.config.config_options import Type
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import Files, File
@@ -24,9 +25,9 @@ from mkdocs_editor_notes.models import EditorNote
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
-    show_markers: config_options.Type[bool] = config_options.Type(bool, default=False)
-    note_type_emojis: config_options.Type[dict[str, str]] = config_options.Type(dict, default={})
-    aggregator_page: config_options.Type[str] = config_options.Type(str, default="editor-notes.md")
+    show_markers: Type[bool] = config_options.Type(bool, default=False)
+    note_type_emojis: Type[dict[str, str]] = config_options.Type(dict, default={})
+    aggregator_page: Type[str] = config_options.Type(str, default="editor-notes.md")
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):

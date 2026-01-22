@@ -24,9 +24,9 @@ from mkdocs_editor_notes.models import EditorNote
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
-    show_markers: bool = config_options.Type(bool, default=False)
-    note_type_emojis: dict[str, str] = config_options.Type(dict, default={})
-    aggregator_page: str = config_options.Type(str, default="editor-notes.md")
+    show_markers = config_options.Type(bool, default=False)
+    note_type_emojis = config_options.Type(dict, default={})
+    aggregator_page = config_options.Type(str, default="editor-notes.md")
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):

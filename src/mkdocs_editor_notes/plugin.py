@@ -81,9 +81,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         
         # Find all note definitions and extract them
         for match in NOTE_DEF_PATTERN.finditer(markdown_protected):
-            note_type = match.group(1)
-            note_label = match.group(2)
-            note_text = match.group(3)
+            note_type = match.group('type')
+            note_label = match.group('label')
+            note_text = match.group('text')
             
             # Create a key for this note
             note_key = f"{note_type}:{note_label}" if note_label else note_type
@@ -112,8 +112,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             # Check if this line has a note reference
             ref_match = NOTE_REF_PATTERN.search(line)
             if ref_match:
-                note_type = ref_match.group(1)
-                note_label = ref_match.group(2)
+                note_type = ref_match.group('type')
+                note_label = ref_match.group('label')
                 note_key = f"{note_type}:{note_label}" if note_label else note_type
                 
                 # Generate paragraph ID for this note
@@ -151,8 +151,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         else:
             # Replace with clickable markers linking to aggregator
             def replace_ref(match):
-                note_type = match.group(1)
-                note_label = match.group(2)
+                note_type = match.group('type')
+                note_label = match.group('label')
                 note_key = f"{note_type}:{note_label}" if note_label else note_type
                 
                 # Generate a unique ID for this note for linking to aggregator

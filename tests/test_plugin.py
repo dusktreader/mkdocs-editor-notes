@@ -3,6 +3,7 @@
 import pytest
 import re
 
+from mkdocs_editor_notes.constants import NOTE_DEF_PATTERN, NOTE_REF_PATTERN
 from mkdocs_editor_notes.plugin import EditorNotesPlugin
 from mkdocs_editor_notes.models import EditorNote
 
@@ -63,30 +64,26 @@ def test_plugin_config():
 def test_note_pattern_matching():
     """Test regex patterns for note extraction."""
     # Test definition pattern
-    def_pattern = re.compile(r'^\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]:\s+(.+)$', re.MULTILINE)
-    
     text1 = "[^todo:test-note]: This is a test note"
-    match1 = def_pattern.match(text1)
+    match1 = NOTE_DEF_PATTERN.match(text1)
     assert match1
-    assert match1.group(1) == "todo"
-    assert match1.group(2) == "test-note"
-    assert match1.group(3) == "This is a test note"
+    assert match1.group('type') == "todo"
+    assert match1.group('label') == "test-note"
+    assert match1.group('text') == "This is a test note"
     
     text2 = "[^ponder]: Think about this"
-    match2 = def_pattern.match(text2)
+    match2 = NOTE_DEF_PATTERN.match(text2)
     assert match2
-    assert match2.group(1) == "ponder"
-    assert match2.group(2) is None
-    assert match2.group(3) == "Think about this"
+    assert match2.group('type') == "ponder"
+    assert match2.group('label') is None
+    assert match2.group('text') == "Think about this"
     
     # Test reference pattern
-    ref_pattern = re.compile(r'\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]')
-    
     text3 = "Some text[^todo:label] more text"
-    match3 = ref_pattern.search(text3)
+    match3 = NOTE_REF_PATTERN.search(text3)
     assert match3
-    assert match3.group(1) == "todo"
-    assert match3.group(2) == "label"
+    assert match3.group('type') == "todo"
+    assert match3.group('label') == "label"
 
 
 def test_note_definition_removal():
@@ -122,15 +119,13 @@ def test_note_reference_replacement():
     """Test that note references can be replaced with HTML."""
     markdown = "Test paragraph.[^todo:test] More text."
     
-    ref_pattern = re.compile(r'\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]')
-    
     def replace_ref(match):
-        note_type = match.group(1)
-        note_label = match.group(2)
+        note_type = match.group('type')
+        note_label = match.group('label')
         label_text = f":{note_label}" if note_label else ""
         return f'<sup class="editor-note-marker editor-note-{note_type}">[{note_type}{label_text}]</sup>'
     
-    result = ref_pattern.sub(replace_ref, markdown)
+    result = NOTE_REF_PATTERN.sub(replace_ref, markdown)
     
     assert 'editor-note-marker' in result
     assert 'todo:test' in result

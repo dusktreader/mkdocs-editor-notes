@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, override
+from typing import Any, cast, override
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
@@ -48,7 +48,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         """Setup configuration and emoji mappings."""
         # Build complete emoji map (defaults + user overrides)
         self.note_type_emojis = FIXED_NOTE_TYPES.copy()
-        custom_emojis: dict[str, str] = self.config.get("note_type_emojis", {})
+        custom_emojis = cast(dict[str, str], self.config.get("note_type_emojis", {}))
         self.note_type_emojis.update(custom_emojis)
 
         # Create placeholder aggregator file if it doesn't exist

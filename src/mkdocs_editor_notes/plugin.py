@@ -46,33 +46,27 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
+        """Setup configuration and emoji mappings."""
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
             **self.config.note_type_emojis,
         }
 
-        aggregator_file = Path(config.docs_dir) / self.config.aggregator_page
+        docs_dir = Path(config["docs_dir"])
+        aggregator_file = docs_dir / self.config.aggregator_page
         if not aggregator_file.exists():
             aggregator_file.write_text("# Editor Notes\n\nThis page will be generated during the build.\n")
 
         return config
 
-    def _is_fixed_type(self, note_type: str) -> bool:
-        """Check if note type is a fixed/built-in type."""
+    def is_fixed_type(self, note_type: str) -> bool:
         return note_type in FIXED_NOTE_TYPES
 
-    def _get_emoji(self, note_type: str) -> str:
-        """Get emoji for a note type."""
-        # Check if user has specified an emoji
-        if note_type in self.note_type_emojis:
-            return self.note_type_emojis[note_type]
-        # Use default for custom types
-        return DEFAULT_CUSTOM_EMOJI
+    def get_emoji(self, note_type: str) -> str:
+        return self.note_type_emojis.get(note_type, DEFAULT_CUSTOM_EMOJI)
 
     @override
-    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
-        """Process markdown to extract editor notes."""
-        # Store mapping of note refs to paragraph IDs
+    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
         note_to_paragraph = {}
 
         # Protect code blocks by temporarily replacing them
@@ -166,7 +160,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
                     paragraph_id = note_to_paragraph[note_key].paragraph_id
                     # Use matching emoji for this note type
-                    marker_symbol = self._get_emoji(note_type)
+                    marker_symbol = self.get_emoji(note_type)
                     # Create hover text with type and label
                     hover_text = f"{note_type}: {note_label}"
                     # Link to aggregator page using markdown format
@@ -240,8 +234,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             notes_by_type.setdefault(note.note_type, []).append(note)
 
         # Separate fixed and custom types
-        fixed_types = [t for t in sorted(notes_by_type.keys()) if self._is_fixed_type(t)]
-        custom_types = [t for t in sorted(notes_by_type.keys()) if not self._is_fixed_type(t)]
+        fixed_types = [t for t in sorted(notes_by_type.keys()) if self.is_fixed_type(t)]
+        custom_types = [t for t in sorted(notes_by_type.keys()) if not self.is_fixed_type(t)]
 
         # Build markdown content with front matter to configure TOC
         md_parts = [
@@ -258,7 +252,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Add fixed note types first
         for note_type in fixed_types:
             notes = notes_by_type[note_type]
-            emoji = self._get_emoji(note_type)
+            emoji = self.get_emoji(note_type)
             md_parts.append(f"## {emoji} {note_type.capitalize()}")
             md_parts.append("")
 
@@ -293,7 +287,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
             for note_type in custom_types:
                 notes = notes_by_type[note_type]
-                emoji = self._get_emoji(note_type)
+                emoji = self.get_emoji(note_type)
                 md_parts.append(f"### {emoji} {note_type}")
                 md_parts.append("")
 
@@ -302,7 +296,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     note_id = f"note-{note.paragraph_id}"
 
                     # Format identifier as H4 with source link
-                    identifier = note.label if note.label else note_type
+                    identifier = note.label
                     source_file = note.source_page
                     line_num = note.line_number or 0
 

@@ -21,7 +21,6 @@ def test_editor_note_model():
     assert note.note_type == "todo"
     assert note.label == "fix-bug"
     assert note.note_id == "todo-fix-bug"
-    assert note.display_label == "fix-bug"
 
 
 

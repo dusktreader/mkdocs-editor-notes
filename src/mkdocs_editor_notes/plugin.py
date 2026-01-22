@@ -99,10 +99,6 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         processed_lines = []
 
         for line in lines:
-            # Skip note definition lines
-            if NOTE_DEF_PATTERN.match(line):
-                continue
-
             # Check if this line has a note reference
             ref_match = NOTE_REF_PATTERN.search(line)
             if ref_match:
@@ -132,6 +128,11 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         for note in note_to_paragraph.values():
             if note.paragraph_id:  # Only add if we found a reference
                 self.notes.append(note)
+
+        # Remove note definitions from markdown (they can span multiple lines)
+        markdown = NOTE_DEF_PATTERN.sub("", markdown)
+        # Clean up any extra newlines left behind
+        markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
 
         # Remove note references if show_markers is False
         if not self.config["show_markers"]:

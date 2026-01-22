@@ -252,7 +252,7 @@ span[id^="note-editor-note-para"]:target {
     animation: none;
 }
 .editor-note-highlight {
-    background-color: #ffeb3b;
+    background-color: #fff9c4;
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;
@@ -318,11 +318,11 @@ function highlightTarget() {
             el.classList.add('editor-note-highlight');
             setTimeout(() => {
                 el.classList.add('editor-note-highlight-fade');
-            }, HIGHLIGHT_DURATION);
+            }, 10);
             setTimeout(() => {
                 el.classList.remove('editor-note-highlight');
                 el.classList.remove('editor-note-highlight-fade');
-            }, HIGHLIGHT_DURATION + 7100);
+            }, 7100);
         });
         
         // Scroll to target
@@ -336,11 +336,11 @@ function highlightTarget() {
         elementToHighlight.classList.add('editor-note-highlight');
         setTimeout(() => {
             elementToHighlight.classList.add('editor-note-highlight-fade');
-        }, HIGHLIGHT_DURATION);
+        }, 10);
         setTimeout(() => {
             elementToHighlight.classList.remove('editor-note-highlight');
             elementToHighlight.classList.remove('editor-note-highlight-fade');
-        }, HIGHLIGHT_DURATION + 7100);
+        }, 7100);
         // Scroll to target
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }

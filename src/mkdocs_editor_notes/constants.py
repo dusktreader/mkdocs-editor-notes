@@ -32,7 +32,15 @@ NOTE_DEF_PATTERN = re.compile(
 )
 
 # Pattern for note references: [^type:label] or [^type]
-NOTE_REF_PATTERN = re.compile(r"\[\^(?P<type>[a-z]+)(?::(?P<label>[a-z0-9\-_]+))?\]")
+NOTE_REF_PATTERN = re.compile(
+    r"""
+    \[\^                                # Literal [^
+    (?P<type>[a-z]+)                    # Note type (letters only)
+    (?::(?P<label>[a-z0-9\-_]+))?       # Optional :label (alphanumeric, hyphens, underscores)
+    \]                                  # Literal ]
+    """,
+    re.VERBOSE,
+)
 
 # Pattern for code blocks (to protect from processing)
 CODE_BLOCK_PATTERN = re.compile(r"(```[\s\S]*?```|~~~[\s\S]*?~~~)", re.MULTILINE)

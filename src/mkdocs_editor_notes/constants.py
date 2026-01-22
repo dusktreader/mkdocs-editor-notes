@@ -14,13 +14,12 @@ FIXED_NOTE_TYPES = {
 DEFAULT_CUSTOM_EMOJI = "❗"
 
 # Pattern for note definitions: [^type:label]: note text (can span multiple lines)
-# Labels are REQUIRED
 NOTE_DEF_PATTERN = re.compile(
     r"""
     ^                                   # Start of line
     \[\^                                # Literal [^
     (?P<type>[a-z]+)                    # Note type (letters only)
-    :(?P<label>[a-z0-9\-_]+)            # REQUIRED :label (alphanumeric, hyphens, underscores)
+    :(?P<label>[a-z0-9\-_]+)            # Label (alphanumeric, hyphens, underscores)
     \]:                                 # Literal ]:
     (?P<text>.*?)                       # Note text (non-greedy, can span multiple lines)
     (?=                                 # Lookahead (don't consume):
@@ -33,12 +32,11 @@ NOTE_DEF_PATTERN = re.compile(
 )
 
 # Pattern for note references: [^type:label]
-# Labels are REQUIRED
 NOTE_REF_PATTERN = re.compile(
     r"""
     \[\^                                # Literal [^
     (?P<type>[a-z]+)                    # Note type (letters only)
-    :(?P<label>[a-z0-9\-_]+)            # REQUIRED :label (alphanumeric, hyphens, underscores)
+    :(?P<label>[a-z0-9\-_]+)            # Label (alphanumeric, hyphens, underscores)
     \]                                  # Literal ]
     """,
     re.VERBOSE,

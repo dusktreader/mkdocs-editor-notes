@@ -82,10 +82,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Find all note definitions and extract them
         for match in NOTE_DEF_PATTERN.finditer(markdown_protected):
             note_type = match.group("type")
-            note_label = match.group("label")  # Always present now
-            note_text = match.group("text").strip()  # Strip whitespace from multiline text
+            note_label = match.group("label")
+            note_text = match.group("text").strip()
 
-            # Create a key for this note (label is always present)
+            # Create a key for this note
             note_key = f"{note_type}:{note_label}"
 
             # Create EditorNote object (we'll set paragraph_id later)
@@ -113,7 +113,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             ref_match = NOTE_REF_PATTERN.search(line)
             if ref_match:
                 note_type = ref_match.group("type")
-                note_label = ref_match.group("label")  # Always present now
+                note_label = ref_match.group("label")
                 note_key = f"{note_type}:{note_label}"
 
                 # Generate paragraph ID for this note
@@ -153,7 +153,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             # Replace with clickable markers linking to aggregator
             def replace_ref(match):
                 note_type = match.group("type")
-                note_label = match.group("label")  # Always present now
+                note_label = match.group("label")
                 note_key = f"{note_type}:{note_label}"
 
                 # Generate a unique ID for this note for linking to aggregator
@@ -258,7 +258,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 # Add anchor for linking from markers
                 note_id = f"note-{note.paragraph_id}"
 
-                # Format identifier as H4 with source link (label always present)
+                # Format identifier as H4 with source link
                 identifier = note.label
                 source_file = note.source_page
                 line_num = note.line_number or 0

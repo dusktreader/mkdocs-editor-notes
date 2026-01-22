@@ -59,7 +59,7 @@ def test_note_pattern_matching():
     assert match1.group("label") == "test-note"
     assert match1.group("text").strip() == "This is a test note"
 
-    # Test that unlabeled notes don't match (labels required)
+    # Test that unlabeled notes don't match
     text2 = "[^ponder]: Think about this"
     match2 = NOTE_DEF_PATTERN.match(text2)
     assert match2 is None
@@ -88,7 +88,7 @@ This should not be captured."""
     assert match4.group("type") == "todo"
     assert match4.group("label") == "label"
 
-    # Test that unlabeled references don't match (labels required)
+    # Test that unlabeled references don't match
     text5 = "Some text[^todo] more text"
     match5 = NOTE_REF_PATTERN.search(text5)
     assert match5 is None

@@ -49,7 +49,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         """Setup configuration and emoji mappings."""
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
-            **self.config.get("note_type_emojis", {}),  # pyright: ignore[reportUnknownMemberType]
+            **self.config.get("note_type_emojis", {}),
         }
 
         # Create placeholder aggregator file if it doesn't exist

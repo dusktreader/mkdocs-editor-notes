@@ -33,11 +33,15 @@ class EditorNotesPluginConfig(Config):
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     """MkDocs plugin to aggregate editor notes from documentation."""
 
+    notes: list[EditorNote]
+    paragraph_counter: int
+    note_type_emojis: dict[str, str]
+
     def __init__(self) -> None:
         super().__init__()
-        self.notes: list[EditorNote] = []
+        self.notes = []
         self.paragraph_counter = 0
-        self.note_type_emojis: dict[str, str] = {}
+        self.note_type_emojis = {}
 
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Setup configuration and emoji mappings."""

@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, override
+from typing import Any, cast, override
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
@@ -46,15 +46,16 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Setup configuration and emoji mappings."""
+        plugin_config = cast(EditorNotesPluginConfig, self.config)
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
-            **self.config.get("note_type_emojis", {}),  # pyright: ignore[reportUnknownMemberType]
+            **plugin_config["note_type_emojis"],
         }
 
         # Create placeholder aggregator file if it doesn't exist
         if "docs_dir" in config:
             docs_dir = Path(config["docs_dir"])
-            aggregator_file = docs_dir / self.config["aggregator_page"]
+            aggregator_file = docs_dir / plugin_config["aggregator_page"]
             if not aggregator_file.exists():
                 aggregator_file.write_text("# Editor Notes\n\nThis page will be generated during the build.\n")
 

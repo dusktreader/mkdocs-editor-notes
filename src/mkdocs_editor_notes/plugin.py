@@ -66,7 +66,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     @override
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
-        note_to_paragraph = {}
+        note_to_ref = {}
         ref_counter = 0
 
         # Protect code blocks by temporarily replacing them
@@ -92,7 +92,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 source_page=page.file.src_uri,
             )
 
-            note_to_paragraph[note.note_key] = note
+            note_to_ref[note.note_key] = note
 
         # Process line by line to find note references and add anchors
         lines = markdown_protected.split("\n")
@@ -110,21 +110,20 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 ref_id = f"editor-note-para-{ref_counter}"
 
                 # Set the paragraph ID and line number for the note
-                if note_key in note_to_paragraph:
-                    note_to_paragraph[note_key].paragraph_id = ref_id
+                if note_key in note_to_ref:
+                    note_to_ref[note_key].paragraph_id = ref_id
                     # Store line number (approximate, based on position in file)
-                    note_to_paragraph[note_key].line_number = len(processed_lines) + 1
+                    note_to_ref[note_key].line_number = len(processed_lines) + 1
 
                 # Add anchor span at the start of the line
-                if "<span id=" not in line:
-                    line = f'<span id="{ref_id}"></span>{line}'
+                line = f'<span id="{ref_id}"></span>{line}'
 
             processed_lines.append(line)
 
         markdown = "\n".join(processed_lines)
 
         # Add notes to collection
-        for note in note_to_paragraph.values():
+        for note in note_to_ref.values():
             if note.paragraph_id:  # Only add if we found a reference
                 self.notes.append(note)
 
@@ -144,9 +143,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 note_key = f"{note_type}:{note_label}"
 
                 # Generate a unique ID for this note for linking to aggregator
-                if note_key in note_to_paragraph and note_to_paragraph[note_key].paragraph_id:
-                    note_id = f"note-{note_to_paragraph[note_key].paragraph_id}"
-                    paragraph_id = note_to_paragraph[note_key].paragraph_id
+                if note_key in note_to_ref and note_to_ref[note_key].paragraph_id:
+                    note_id = f"note-{note_to_ref[note_key].paragraph_id}"
+                    paragraph_id = note_to_ref[note_key].paragraph_id
                     # Use matching emoji for this note type
                     marker_symbol = self.get_emoji(note_type)
                     # Create hover text with type and label

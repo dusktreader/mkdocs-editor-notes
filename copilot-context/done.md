@@ -133,3 +133,10 @@
 - [x] Stops at next note marker span to prevent over-highlighting
 - [x] Scrolls to first element in highlighted section
 - [x] Both directions (to and from aggregator) working
+
+### Final Highlight Polish
+- [x] Changed to softer yellow (#fff9c4 instead of #ffeb3b)
+- [x] Removed fade in - appears immediately at full color
+- [x] 7 second fade out to transparent
+- [x] Better text readability - highlight doesn't wash out text
+- [x] Timing simplified: 10ms delay then 7s fade

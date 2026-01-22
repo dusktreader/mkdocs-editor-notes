@@ -11,9 +11,13 @@ class EditorNote:
     label: str
     text: str
     source_page: str
-    paragraph_id: str
+    paragraph_id: str | None = None
     line_number: int | None = None
 
     @property
     def note_id(self) -> str:
         return f"{self.note_type}-{self.label}"
+
+    @property
+    def note_key(self) -> str:
+        return f"{self.note_type}:{self.label}"

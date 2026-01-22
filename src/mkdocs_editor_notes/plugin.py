@@ -85,19 +85,15 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             note_label = match.group("label")
             note_text = match.group("text").strip()
 
-            # Create a key for this note
-            note_key = f"{note_type}:{note_label}"
-
             # Create EditorNote object (we'll set paragraph_id later)
             note = EditorNote(
                 note_type=note_type,
                 label=note_label,
                 text=note_text,
                 source_page=page.file.src_uri,
-                paragraph_id="",  # Will be set below
             )
 
-            note_to_paragraph[note_key] = note
+            note_to_paragraph[note.note_key] = note
 
         # Process line by line to find note references and add anchors
         lines = markdown_protected.split("\n")
@@ -142,8 +138,6 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Always remove note definitions from markdown (including the newline)
         markdown = NOTE_DEF_PATTERN.sub("", markdown)
         # Clean up any double newlines left behind
-        import re
-
         markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
 
         # Remove note references if show_markers is False

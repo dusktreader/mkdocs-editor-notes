@@ -46,10 +46,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Setup configuration and emoji mappings."""
-        # Build complete emoji map (defaults + user overrides)
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
-            **self.config.get("note_type_emojis", {}),
+            **self.config.get("note_type_emojis", {}),  # pyright: ignore[reportUnknownMemberType]
         }
 
         # Create placeholder aggregator file if it doesn't exist

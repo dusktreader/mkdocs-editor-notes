@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any
+from typing import Any, final
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
@@ -21,6 +21,7 @@ from mkdocs_editor_notes.constants import (
 from mkdocs_editor_notes.models import EditorNote
 
 
+@final
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 

@@ -252,11 +252,11 @@ span[id^="note-editor-note-para"]:target {
     animation: none;
 }
 .editor-note-highlight {
-    background-color: #fff9c4;
+    background-color: #fffde7;
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;
-    transition: background-color 7s ease-out;
+    transition: background-color 2s ease-out;
 }
 .editor-note-highlight-fade {
     background-color: transparent;
@@ -283,8 +283,8 @@ function highlightTarget() {
     
     // Determine what to highlight based on the ID
     let elementToHighlight = null;
-    const HIGHLIGHT_DURATION = 5000; // Stay at full color for 5 seconds
-    const FADE_DURATION = 7000; // Fade for 7 seconds
+    const HIGHLIGHT_DURATION = 3000; // Stay at full color for 3 seconds
+    const FADE_DURATION = 2000; // Fade for 2 seconds
     
     if (target.id.startsWith('editor-note-para')) {
         // Highlighting source paragraph - get parent element

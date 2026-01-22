@@ -71,6 +71,7 @@
 - [x] All tests passing
 
 ## Bug Fixes and Improvements
+- [x] Fixed links from aggregator page back to source pages (using relative URLs)
 
 ### Emoji and Marker Improvements
 - [x] Changed ponder emoji from 💭 to ⏳ (hourglass)

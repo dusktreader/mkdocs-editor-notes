@@ -1,6 +1,7 @@
 """MkDocs plugin for aggregating editor notes."""
 
 import hashlib
+import re
 from pathlib import Path
 from typing import Any, override
 
@@ -70,9 +71,9 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         note_to_paragraph = {}
 
         # Protect code blocks by temporarily replacing them
-        code_blocks = []
+        code_blocks: list[str] = []
 
-        def save_code_block(match):
+        def save_code_block(match: re.Match[str]) -> str:
             code_blocks.append(match.group(0))
             return f"<<<CODE_BLOCK_{len(code_blocks) - 1}>>>"
 

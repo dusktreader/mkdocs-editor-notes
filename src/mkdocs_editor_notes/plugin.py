@@ -36,13 +36,11 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     config: EditorNotesPluginConfig
     notes: list[EditorNote]
-    paragraph_counter: int
     note_type_emojis: dict[str, str]
 
     def __init__(self) -> None:
         super().__init__()
         self.notes = []
-        self.paragraph_counter = 0
         self.note_type_emojis = {}
 
     @override
@@ -69,6 +67,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     @override
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
         note_to_paragraph = {}
+        paragraph_counter = 0
 
         # Protect code blocks by temporarily replacing them
         code_blocks: list[str] = []
@@ -113,8 +112,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 note_key = f"{note_type}:{note_label}"
 
                 # Generate paragraph ID for this note
-                self.paragraph_counter += 1
-                paragraph_id = f"editor-note-para-{self.paragraph_counter}"
+                paragraph_counter += 1
+                paragraph_id = f"editor-note-para-{paragraph_counter}"
 
                 # Set the paragraph ID and line number for the note
                 if note_key in note_to_paragraph:

@@ -29,7 +29,6 @@ def test_plugin_initialization():
     plugin = EditorNotesPlugin()
 
     assert plugin.notes == []
-    assert plugin.paragraph_counter == 0
 
 
 def test_plugin_config():

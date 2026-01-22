@@ -67,7 +67,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     @override
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
         note_to_paragraph = {}
-        paragraph_counter = 0
+        ref_counter = 0
 
         # Protect code blocks by temporarily replacing them
         code_blocks: list[str] = []
@@ -99,7 +99,6 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         processed_lines = []
 
         for line in lines:
-            # Check if this line has a note reference
             ref_match = NOTE_REF_PATTERN.search(line)
             if ref_match:
                 note_type = ref_match.group("type")
@@ -107,18 +106,18 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 note_key = f"{note_type}:{note_label}"
 
                 # Generate paragraph ID for this note
-                paragraph_counter += 1
-                paragraph_id = f"editor-note-para-{paragraph_counter}"
+                ref_counter += 1
+                ref_id = f"editor-note-para-{ref_counter}"
 
                 # Set the paragraph ID and line number for the note
                 if note_key in note_to_paragraph:
-                    note_to_paragraph[note_key].paragraph_id = paragraph_id
+                    note_to_paragraph[note_key].paragraph_id = ref_id
                     # Store line number (approximate, based on position in file)
                     note_to_paragraph[note_key].line_number = len(processed_lines) + 1
 
                 # Add anchor span at the start of the line
                 if "<span id=" not in line:
-                    line = f'<span id="{paragraph_id}"></span>{line}'
+                    line = f'<span id="{ref_id}"></span>{line}'
 
             processed_lines.append(line)
 

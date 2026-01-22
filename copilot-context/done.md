@@ -148,3 +148,10 @@
 - [x] Fades to transparent over 2 seconds
 - [x] Total: 5 seconds visible
 - [x] Watch already configured in mkdocs.yaml for live reload
+
+### Single Rectangle Highlighting for Aggregator Entries
+- [x] Wrapped each note entry in `<div class="editor-note-entry">`
+- [x] Added md_in_html markdown extension to render HTML divs
+- [x] Simplified JavaScript to highlight entire div container  
+- [x] Creates single rectangle around H4 heading and description
+- [x] No more separate highlights for heading and text lines

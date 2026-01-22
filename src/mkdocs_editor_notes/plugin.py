@@ -33,6 +33,7 @@ class EditorNotesPluginConfig(Config):
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     """MkDocs plugin to aggregate editor notes from documentation."""
 
+    config: EditorNotesPluginConfig
     notes: list[EditorNote]
     paragraph_counter: int
     note_type_emojis: dict[str, str]

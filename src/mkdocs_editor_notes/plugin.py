@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, final
+from typing import Any
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
@@ -21,13 +21,12 @@ from mkdocs_editor_notes.constants import (
 from mkdocs_editor_notes.models import EditorNote
 
 
-@final
 class EditorNotesPluginConfig(Config):
     """Configuration for the EditorNotes plugin."""
 
-    show_markers = config_options.Type(bool, default=False)
-    note_type_emojis = config_options.Type(dict, default={})
-    aggregator_page = config_options.Type(str, default="editor-notes.md")
+    show_markers: config_options.Type[bool] = config_options.Type(bool, default=False)
+    note_type_emojis: config_options.Type[dict[str, str]] = config_options.Type(dict, default={})
+    aggregator_page: config_options.Type[str] = config_options.Type(str, default="editor-notes.md")
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):

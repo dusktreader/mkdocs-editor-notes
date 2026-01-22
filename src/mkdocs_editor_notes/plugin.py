@@ -256,10 +256,10 @@ span[id^="note-editor-note-para"]:target {
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;
-    transition: background-color 2s ease-out;
 }
 .editor-note-highlight-fade {
     background-color: transparent;
+    transition: background-color 2s ease-out;
 }
 @keyframes highlight-fade {
     0% { background-color: #ffeb3b; }

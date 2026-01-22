@@ -252,7 +252,7 @@ span[id^="note-editor-note-para"]:target {
     animation: none;
 }
 .editor-note-highlight {
-    background-color: #fffde7;
+    background-color: rgba(255, 253, 231, 0.5);
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;

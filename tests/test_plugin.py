@@ -24,20 +24,6 @@ def test_editor_note_model():
     assert note.display_label == "fix-bug"
 
 
-def test_editor_note_without_label():
-    """Test EditorNote without label."""
-    note = EditorNote(
-        note_type="ponder",
-        label=None,
-        text="Think about this",
-        source_page="index.md",
-        paragraph_id="para-2",
-    )
-
-    assert note.label is None
-    assert note.note_id == "ponder-para-2"
-    assert note.display_label == "ponder"
-
 
 def test_plugin_initialization():
     """Test plugin initializes correctly."""
@@ -73,12 +59,10 @@ def test_note_pattern_matching():
     assert match1.group("label") == "test-note"
     assert match1.group("text").strip() == "This is a test note"
 
+    # Test that unlabeled notes don't match (labels required)
     text2 = "[^ponder]: Think about this"
     match2 = NOTE_DEF_PATTERN.match(text2)
-    assert match2
-    assert match2.group("type") == "ponder"
-    assert match2.group("label") is None
-    assert match2.group("text").strip() == "Think about this"
+    assert match2 is None
 
     # Test multiline note definition
     text3 = """[^improve:multiline]:
@@ -103,6 +87,12 @@ This should not be captured."""
     assert match4
     assert match4.group("type") == "todo"
     assert match4.group("label") == "label"
+
+    # Test that unlabeled references don't match (labels required)
+    text5 = "Some text[^todo] more text"
+    match5 = NOTE_REF_PATTERN.search(text5)
+    assert match5 is None
+
 
 
 def test_note_definition_removal():

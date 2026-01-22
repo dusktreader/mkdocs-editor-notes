@@ -47,12 +47,6 @@ This page aggregates all editor notes found throughout the documentation.
 <p>Should we support alternative syntax formats?</p>
 </div>
 
-<div class="editor-note-entry">
-<span id="note-editor-note-para-14"></span>
-<h4>ponder (<a href="quickstart/#editor-note-para-14">quickstart.md:43</a>)</h4>
-<p>Is this the best name for this type of note?</p>
-</div>
-
 
 ## 🔍 Research
 
@@ -63,8 +57,8 @@ This page aggregates all editor notes found throughout the documentation.
 </div>
 
 <div class="editor-note-entry">
-<span id="note-editor-note-para-15"></span>
-<h4>alternatives (<a href="quickstart/#editor-note-para-15">quickstart.md:57</a>)</h4>
+<span id="note-editor-note-para-14"></span>
+<h4>alternatives (<a href="quickstart/#editor-note-para-14">quickstart.md:57</a>)</h4>
 <p>Look into other mkdocs plugins for similar functionality</p>
 </div>
 
@@ -116,8 +110,8 @@ This page aggregates all editor notes found throughout the documentation.
 </div>
 
 <div class="editor-note-entry">
-<span id="note-editor-note-para-16"></span>
-<h4>custom-examples (<a href="quickstart/#editor-note-para-16">quickstart.md:65</a>)</h4>
+<span id="note-editor-note-para-15"></span>
+<h4>custom-examples (<a href="quickstart/#editor-note-para-15">quickstart.md:65</a>)</h4>
 <p>Should we add more custom type examples?</p>
 </div>
 

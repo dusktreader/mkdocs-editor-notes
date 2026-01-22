@@ -12,7 +12,6 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import Files, File
 from mkdocs.structure.pages import Page
 
-from mkdocs_editor_notes.markdown_extension import EditorNotesExtension
 from mkdocs_editor_notes.models import EditorNote
 
 

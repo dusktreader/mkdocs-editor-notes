@@ -143,11 +143,14 @@ def test_note_reference_replacement():
 def test_aggregator_markdown_generation():
     """Test aggregator markdown generation."""
     from mkdocs_editor_notes.plugin import EditorNotesPluginConfig
+    from tempfile import TemporaryDirectory
     
     plugin = EditorNotesPlugin()
     plugin.config = EditorNotesPluginConfig()
     plugin.config.load_dict({"note_type_emojis": {}, "aggregator_page": "editor-notes.md"})
-    plugin.on_config({})  # Initialize emojis
+    
+    with TemporaryDirectory() as tmpdir:
+        plugin.on_config({"docs_dir": tmpdir})  # Initialize emojis
 
     # Add some test notes
     plugin.notes = [

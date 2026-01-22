@@ -46,18 +46,14 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
-        """Setup configuration and emoji mappings."""
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
             **self.config.note_type_emojis,
         }
 
-        # Create placeholder aggregator file if it doesn't exist
-        if "docs_dir" in config:
-            docs_dir = Path(config["docs_dir"])
-            aggregator_file = docs_dir / self.config.aggregator_page
-            if not aggregator_file.exists():
-                aggregator_file.write_text("# Editor Notes\n\nThis page will be generated during the build.\n")
+        aggregator_file = Path(config.docs_dir) / self.config.aggregator_page
+        if not aggregator_file.exists():
+            aggregator_file.write_text("# Editor Notes\n\nThis page will be generated during the build.\n")
 
         return config
 

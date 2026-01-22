@@ -11,6 +11,7 @@ FIXED_NOTE_TYPES = {
 
 DEFAULT_CUSTOM_EMOJI = "❗"
 
+# Matches: [^type:label]: note text (can span multiple lines)
 NOTE_DEF_PATTERN = re.compile(
     r"""
     ^                                   # Start of line
@@ -28,6 +29,7 @@ NOTE_DEF_PATTERN = re.compile(
     re.MULTILINE | re.DOTALL | re.VERBOSE,
 )
 
+# Matches: [^type:label]
 NOTE_REF_PATTERN = re.compile(
     r"""
     \[\^                                # Literal [^

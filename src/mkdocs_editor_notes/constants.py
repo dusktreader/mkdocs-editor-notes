@@ -14,11 +14,10 @@ FIXED_NOTE_TYPES = {
 DEFAULT_CUSTOM_EMOJI = "❗"
 
 # Pattern for note definitions: [^type:label]: note text (can span multiple lines)
-# Text continues until: blank line (newline with optional whitespace followed by newline)
-# OR another note definition (line starting with [^)
+# Text continues until: blank line (\n\s*\n) OR another definition (\n\[^) OR end of string
 NOTE_DEF_PATTERN = re.compile(
-    r"^\[\^(?P<type>[a-z]+)(?::(?P<label>[a-z0-9\-_]+))?\]:[ \t]*(?P<text>.*(?:\n(?!\s*\n|\[\^).*)*)",
-    re.MULTILINE,
+    r"^\[\^(?P<type>[a-z]+)(?::(?P<label>[a-z0-9\-_]+))?\]:(?P<text>.*?)(?=\n\s*\n|\n\[\^|\Z)",
+    re.MULTILINE | re.DOTALL,
 )
 
 # Pattern for note references: [^type:label] or [^type]

@@ -10,23 +10,20 @@ This page aggregates all editor notes found throughout the documentation.
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-2"></span>
-#### icons ([index.md:16](index.md#editor-note-para-2))
-
-Add visual icons for different note types
+<h4>icons (<a href="index.md#editor-note-para-2">index.md:16</a>)</h4>
+<p>Add visual icons for different note types</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-9"></span>
-#### highlight-style ([features.md:64](features.md#editor-note-para-9))
-
-Make highlighting style configurable via CSS variables
+<h4>highlight-style (<a href="features.md#editor-note-para-9">features.md:64</a>)</h4>
+<p>Make highlighting style configurable via CSS variables</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-13"></span>
-#### better-examples ([quickstart.md:35](quickstart.md#editor-note-para-13))
-
-Add more diverse examples
+<h4>better-examples (<a href="quickstart.md#editor-note-para-13">quickstart.md:35</a>)</h4>
+<p>Add more diverse examples</p>
 </div>
 
 
@@ -34,30 +31,26 @@ Add more diverse examples
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-3"></span>
-#### accessibility ([index.md:20](index.md#editor-note-para-3))
-
-Ensure highlighting meets accessibility standards
+<h4>accessibility (<a href="index.md#editor-note-para-3">index.md:20</a>)</h4>
+<p>Ensure highlighting meets accessibility standards</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-7"></span>
-#### label-format ([features.md:41](features.md#editor-note-para-7))
-
-Should labels support different formats or special characters?
+<h4>label-format (<a href="features.md#editor-note-para-7">features.md:41</a>)</h4>
+<p>Should labels support different formats or special characters?</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-12"></span>
-#### syntax-alternative ([quickstart.md:29](quickstart.md#editor-note-para-12))
-
-Should we support alternative syntax formats?
+<h4>syntax-alternative (<a href="quickstart.md#editor-note-para-12">quickstart.md:29</a>)</h4>
+<p>Should we support alternative syntax formats?</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-14"></span>
-#### ponder ([quickstart.md:43](quickstart.md#editor-note-para-14))
-
-Is this the best name for this type of note?
+<h4>ponder (<a href="quickstart.md#editor-note-para-14">quickstart.md:43</a>)</h4>
+<p>Is this the best name for this type of note?</p>
 </div>
 
 
@@ -65,16 +58,14 @@ Is this the best name for this type of note?
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-8"></span>
-#### highlight-methods ([features.md:56](features.md#editor-note-para-8))
-
-Research best practices for scroll-to-highlight UX
+<h4>highlight-methods (<a href="features.md#editor-note-para-8">features.md:56</a>)</h4>
+<p>Research best practices for scroll-to-highlight UX</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-15"></span>
-#### alternatives ([quickstart.md:57](quickstart.md#editor-note-para-15))
-
-Look into other mkdocs plugins for similar functionality
+<h4>alternatives (<a href="quickstart.md#editor-note-para-15">quickstart.md:57</a>)</h4>
+<p>Look into other mkdocs plugins for similar functionality</p>
 </div>
 
 
@@ -82,30 +73,26 @@ Look into other mkdocs plugins for similar functionality
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-1"></span>
-#### update-readme ([index.md:8](index.md#editor-note-para-1))
-
-Update the main README.md with examples
+<h4>update-readme (<a href="index.md#editor-note-para-1">index.md:8</a>)</h4>
+<p>Update the main README.md with examples</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-5"></span>
-#### feature-comparison ([features.md:5](features.md#editor-note-para-5))
-
-Add comparison with other documentation note-taking approaches
+<h4>feature-comparison (<a href="features.md#editor-note-para-5">features.md:5</a>)</h4>
+<p>Add comparison with other documentation note-taking approaches</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-10"></span>
-#### nav-integration ([features.md:88](features.md#editor-note-para-10))
-
-Auto-add aggregator page to navigation
+<h4>nav-integration (<a href="features.md#editor-note-para-10">features.md:88</a>)</h4>
+<p>Auto-add aggregator page to navigation</p>
 </div>
 
 <div class="editor-note-entry">
 <span id="note-editor-note-para-11"></span>
-#### verify-config ([quickstart.md:21](quickstart.md#editor-note-para-11))
-
-Make sure the configuration example is complete
+<h4>verify-config (<a href="quickstart.md#editor-note-para-11">quickstart.md:21</a>)</h4>
+<p>Make sure the configuration example is complete</p>
 </div>
 
 

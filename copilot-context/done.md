@@ -140,3 +140,11 @@
 - [x] 7 second fade out to transparent
 - [x] Better text readability - highlight doesn't wash out text
 - [x] Timing simplified: 10ms delay then 7s fade
+
+### Final Highlight Fix - 50% Opacity
+- [x] Changed to 50% opacity: rgba(255, 253, 231, 0.5)
+- [x] No fade in - appears immediately at 50%
+- [x] Stays at 50% for 3 seconds
+- [x] Fades to transparent over 2 seconds
+- [x] Total: 5 seconds visible
+- [x] Watch already configured in mkdocs.yaml for live reload

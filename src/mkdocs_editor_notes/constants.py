@@ -16,16 +16,16 @@ DEFAULT_CUSTOM_EMOJI = "❗"
 # Pattern for note definitions: [^type:label]: note text (can span multiple lines)
 NOTE_DEF_PATTERN = re.compile(
     r"""
-    ^              # Start of line
-    \[\^           # Literal [^
+    ^                                   # Start of line
+    \[\^                                # Literal [^
     (?P<type>[a-z]+)                    # Note type (letters only)
     (?::(?P<label>[a-z0-9\-_]+))?       # Optional :label (alphanumeric, hyphens, underscores)
-    \]:            # Literal ]:
-    (?P<text>.*?)  # Note text (non-greedy, can span multiple lines)
-    (?=            # Lookahead (don't consume):
-        \n\s*\n    #   Blank line (newline, optional whitespace, newline)
-        |\n\[\^    #   OR next note definition
-        |\Z        #   OR end of string
+    \]:                                 # Literal ]:
+    (?P<text>.*?)                       # Note text (non-greedy, can span multiple lines)
+    (?=                                 # Lookahead (don't consume):
+        \n\s*\n                         #   Blank line (newline, optional whitespace, newline)
+        |\n\[\^                         #   OR next note definition
+        |\Z                             #   OR end of string
     )
     """,
     re.MULTILINE | re.DOTALL | re.VERBOSE,

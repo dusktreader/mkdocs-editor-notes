@@ -83,7 +83,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         for match in NOTE_DEF_PATTERN.finditer(markdown_protected):
             note_type = match.group("type")
             note_label = match.group("label")
-            note_text = match.group("text")
+            note_text = match.group("text").strip()  # Strip whitespace from multiline text
 
             # Create a key for this note
             note_key = f"{note_type}:{note_label}" if note_label else note_type

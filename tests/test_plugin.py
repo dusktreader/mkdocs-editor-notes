@@ -65,27 +65,44 @@ def test_plugin_config():
 
 def test_note_pattern_matching():
     """Test regex patterns for note extraction."""
-    # Test definition pattern
+    # Test definition pattern - single line
     text1 = "[^todo:test-note]: This is a test note"
     match1 = NOTE_DEF_PATTERN.match(text1)
     assert match1
     assert match1.group("type") == "todo"
     assert match1.group("label") == "test-note"
-    assert match1.group("text") == "This is a test note"
+    assert match1.group("text").strip() == "This is a test note"
 
     text2 = "[^ponder]: Think about this"
     match2 = NOTE_DEF_PATTERN.match(text2)
     assert match2
     assert match2.group("type") == "ponder"
     assert match2.group("label") is None
-    assert match2.group("text") == "Think about this"
+    assert match2.group("text").strip() == "Think about this"
+
+    # Test multiline note definition
+    text3 = """[^improve:multiline]:
+This is line one.
+This is line two.
+This is line three.
+
+This should not be captured."""
+    match3 = NOTE_DEF_PATTERN.search(text3)
+    assert match3
+    assert match3.group("type") == "improve"
+    assert match3.group("label") == "multiline"
+    text = match3.group("text").strip()
+    assert "This is line one." in text
+    assert "This is line two." in text
+    assert "This is line three." in text
+    assert "This should not be captured" not in text
 
     # Test reference pattern
-    text3 = "Some text[^todo:label] more text"
-    match3 = NOTE_REF_PATTERN.search(text3)
-    assert match3
-    assert match3.group("type") == "todo"
-    assert match3.group("label") == "label"
+    text4 = "Some text[^todo:label] more text"
+    match4 = NOTE_REF_PATTERN.search(text4)
+    assert match4
+    assert match4.group("type") == "todo"
+    assert match4.group("label") == "label"
 
 
 def test_note_definition_removal():

@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
@@ -43,6 +43,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         self.paragraph_counter = 0
         self.note_type_emojis = {}
 
+    @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         """Setup configuration and emoji mappings."""
         # Build complete emoji map (defaults + user overrides)
@@ -70,6 +71,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         # Use default for custom types
         return DEFAULT_CUSTOM_EMOJI
 
+    @override
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         """Process markdown to extract editor notes."""
         # Store mapping of note refs to paragraph IDs
@@ -183,6 +185,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
         return markdown
 
+    @override
     def on_env(self, env, config: MkDocsConfig, files: Files):
         """Write aggregator markdown file after pages are processed but before rendering."""
         # This runs after on_page_markdown for all pages, so we have all notes
@@ -197,6 +200,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
 
         return env
 
+    @override
     def on_post_page(self, output: str, page, config: MkDocsConfig) -> str:
         """Inject CSS and fix marker links."""
         # Fix marker links to point to proper URLs (remove .md extension)
@@ -225,6 +229,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             output = output.replace("</head>", f"{inject_content}</head>")
         return output
 
+    @override
     def on_post_build(self, config: MkDocsConfig) -> None:
         """Cleanup after build."""
         pass

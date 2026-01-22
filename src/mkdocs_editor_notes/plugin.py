@@ -48,7 +48,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         """Setup configuration and emoji mappings."""
         # Build complete emoji map (defaults + user overrides)
         self.note_type_emojis = FIXED_NOTE_TYPES.copy()
-        config_emojis: dict[str, str] = self.config["note_type_emojis"]
+        config_emojis: dict[str, str] = self.config.get("note_type_emojis") or {}
         self.note_type_emojis.update(config_emojis)
 
         # Create placeholder aggregator file if it doesn't exist

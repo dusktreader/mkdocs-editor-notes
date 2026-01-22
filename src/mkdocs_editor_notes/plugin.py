@@ -278,9 +278,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                 source_file = note.source_page
                 line_num = note.line_number or 0
                 
-                # MkDocs wants links to .md files, not rendered paths
-                # Link to the specific paragraph anchor in the source file
-                link_path = f"{source_file}#{note.paragraph_id}"
+                # Convert source file path to relative URL
+                # Both aggregator and source pages are in the same directory
+                source_url = source_file.replace('.md', '/')
+                link_path = f"{source_url}#{note.paragraph_id}"
                 
                 # Use pure HTML for the entry
                 md_parts.append(f'<div class="editor-note-entry">')
@@ -312,8 +313,10 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                     source_file = note.source_page
                     line_num = note.line_number or 0
                     
-                    # Link to the specific paragraph anchor in the source file
-                    link_path = f"{source_file}#{note.paragraph_id}"
+                    # Convert source file path to relative URL
+                    # Both aggregator and source pages are in the same directory
+                    source_url = source_file.replace('.md', '/')
+                    link_path = f"{source_url}#{note.paragraph_id}"
                     
                     # Use pure HTML for the entry
                     md_parts.append(f'<div class="editor-note-entry">')

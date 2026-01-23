@@ -16,9 +16,13 @@ class EditorNote:
     line_number: int = 0
 
     def __post_init__(self) -> None:
-        """Convert source_page to Path if it's a string."""
+        """Convert source_page to Path if it's a string.
+        
+        After this runs, source_page is guaranteed to be a Path, but the type
+        checker can't know this, so callers may need to cast or ignore types.
+        """
         if isinstance(self.source_page, str):
-            self.source_page = Path(self.source_page)
+            object.__setattr__(self, "source_page", Path(self.source_page))
 
     @property
     def note_id(self) -> str:

@@ -11,7 +11,7 @@ class EditorNote:
     note_type: str
     label: str
     text: str
-    source_page: Path
+    source_page: str | Path
     ref_id: str | None = None
     line_number: int = 0
 

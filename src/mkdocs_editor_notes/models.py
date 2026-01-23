@@ -1,6 +1,7 @@
 """Data models for editor notes."""
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -10,9 +11,14 @@ class EditorNote:
     note_type: str
     label: str
     text: str
-    source_page: str
+    source_page: Path
     ref_id: str | None = None
     line_number: int = 0
+
+    def __post_init__(self) -> None:
+        """Convert source_page to Path if it's a string."""
+        if isinstance(self.source_page, str):
+            self.source_page = Path(self.source_page)
 
     @property
     def note_id(self) -> str:

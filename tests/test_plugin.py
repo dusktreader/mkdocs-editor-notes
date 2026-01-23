@@ -2,6 +2,7 @@
 
 import pytest
 import re
+from pathlib import Path
 
 from mkdocs_editor_notes.constants import NOTE_DEF_PATTERN, NOTE_REF_PATTERN
 from mkdocs_editor_notes.plugin import EditorNotesPlugin
@@ -149,20 +150,23 @@ def test_aggregator_markdown_generation():
 
     with TemporaryDirectory() as tmpdir:
         plugin.on_config({"docs_dir": tmpdir})  # Initialize emojis
+        tmpdir_path = Path(tmpdir)
 
-    # Add some test notes
-    plugin.notes = [
-        EditorNote("todo", "fix-bug", "Fix the bug", "index.md", "para-1"),
-        EditorNote("ponder", "question", "Think about this", "features.md", "para-2"),
-        EditorNote("todo", "improve", "Make it better", "index.md", "para-3"),
-    ]
+        # Add some test notes
+        plugin.notes = [
+            EditorNote("todo", "fix-bug", "Fix the bug", Path("index.md"), "para-1"),
+            EditorNote("ponder", "question", "Think about this", Path("features.md"), "para-2"),
+            EditorNote("todo", "improve", "Make it better", Path("index.md"), "para-3"),
+        ]
 
-    md = plugin._generate_aggregator_markdown()
+        plugin.build_aggregator_markdown(tmpdir_path)
+        aggregator_file = tmpdir_path / "editor-notes.md"
+        md = aggregator_file.read_text()
 
-    assert "# Editor Notes" in md
-    assert "## ✅ Todo" in md  # Check for section header
-    assert "## ⏳ Ponder" in md
-    assert "fix-bug" in md
-    assert "question" in md
-    assert "Fix the bug" in md
-    assert "Think about this" in md
+        assert "# Editor Notes" in md
+        assert "## ✅ Todo" in md  # Check for section header
+        assert "## ⏳ Ponder" in md
+        assert "fix-bug" in md
+        assert "question" in md
+        assert "Fix the bug" in md
+        assert "Think about this" in md

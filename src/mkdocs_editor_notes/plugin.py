@@ -27,7 +27,7 @@ from mkdocs_editor_notes.models import EditorNote
 class EditorNotesPluginConfig(Config):
     show_markers: Type[bool] = config_options.Type(bool, default=False)
     note_type_emojis: Type[dict[str, str]] = config_options.Type(dict, default={})
-    aggregator_page: Type[Path] = config_options.Type(Path, default=Path("editor-notes.md"))
+    aggregator_page: Type[str] = config_options.Type(str, default="editor-notes.md")
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
@@ -40,6 +40,16 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         self.note_map = {}
         self.note_type_emojis = {}
 
+    @property
+    def notes(self) -> list[EditorNote]:
+        """Get all notes as a list."""
+        return list(self.note_map.values())
+
+    @notes.setter
+    def notes(self, value: list[EditorNote]) -> None:
+        """Set notes from a list."""
+        self.note_map = {note.note_key: note for note in value}
+
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
         self.note_type_emojis = {
@@ -47,7 +57,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             **self.config.note_type_emojis,
         }
 
-        docs_dir = Path(config.docs_dir)
+        docs_dir = Path(config["docs_dir"])
         aggregator_file = docs_dir / self.config.aggregator_page
         if not aggregator_file.exists():
             aggregator_file.write_text(

@@ -28,6 +28,7 @@ theme:
         icon: material/brightness-7
         name: Switch to light mode
 watch:
+  - source
   - ../src/mkdocs_editor_notes
 nav:
   - Home: index.md

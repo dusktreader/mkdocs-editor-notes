@@ -34,11 +34,15 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     config: EditorNotesPluginConfig
     note_map: dict[str, EditorNote]
     note_type_emojis: dict[str, str]
+    docs_path: Path
+    aggregator_path: Path
 
     def __init__(self) -> None:
         super().__init__()
         self.note_map = {}
         self.note_type_emojis = {}
+        self.docs_path = Path()
+        self.aggregator_path = Path()
 
     @property
     def notes(self) -> list[EditorNote]:
@@ -57,18 +61,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             **self.config.note_type_emojis,
         }
 
-        docs_dir = Path(config["docs_dir"])
-        aggregator_file = docs_dir / self.config.aggregator_page
-        if not aggregator_file.exists():
-            aggregator_file.write_text(
-                snick.dedent(
-                    """
-                    # Editor Notes
-
-                    This page will be generated during the build.
-                    """
-                )
-            )
+        self.docs_path = Path(config["docs_dir"])
+        self.aggregator_path = self.docs_path / self.config.aggregator_page
 
         return config
 
@@ -178,17 +172,19 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     @override
     def on_env(self, env, config: MkDocsConfig, files: Files):
         """Write aggregator markdown file after pages are processed but before rendering."""
-        self.build_aggregator_markdown(Path(config.docs_dir))
+        self.build_aggregator_markdown()
         return env
 
     @override
     def on_post_page(self, output: str, page, config: MkDocsConfig) -> str:
         """Inject CSS and fix marker links."""
         # Fix marker links to point to proper URLs (remove .md extension)
+        # TODO: I really wish this attribute could be a Path
         aggregator_page = self.config.aggregator_page
-        aggregator_url = aggregator_page.stem
+        aggregator_url = Path(aggregator_page).stem
         output = output.replace(f'href="{aggregator_page}#', f'href="{aggregator_url}#')
 
+        # TODO: use the correct static file logic here
         static_dir = Path(__file__).parent / "static"
         css_file = static_dir / "editor-notes.css"
         js_file = static_dir / "editor-notes.js"
@@ -212,7 +208,7 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
             output = output.replace("</head>", f"{inject_content}</head>")
         return output
 
-    def build_aggregator_markdown(self, docs_dir: Path) -> None:
+    def build_aggregator_markdown(self) -> None:
         if not self.note_map:
             # TODO: warn?
             return
@@ -288,8 +284,8 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
                         blanks_before=1,
                     )
 
-        aggregator_file = docs_dir / self.config.aggregator_page
-        aggregator_file.write_text(str(md_parts))
+        self.aggregator_path.parent.mkdir(parents=True, exist_ok=True)
+        self.aggregator_path.write_text(str(md_parts))
 
     def _get_inline_css(self) -> str:
         """Get inline CSS for the aggregator page."""

@@ -6,23 +6,12 @@ from pathlib import Path
 
 @dataclass
 class EditorNote:
-    """Represents an editor note extracted from markdown."""
-
     note_type: str
     label: str
     text: str
-    source_page: str | Path
+    source_page: Path
     ref_id: str | None = None
     line_number: int = 0
-
-    def __post_init__(self) -> None:
-        """Convert source_page to Path if it's a string.
-        
-        After this runs, source_page is guaranteed to be a Path, but the type
-        checker can't know this, so callers may need to cast or ignore types.
-        """
-        if isinstance(self.source_page, str):
-            object.__setattr__(self, "source_page", Path(self.source_page))
 
     @property
     def note_id(self) -> str:

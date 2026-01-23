@@ -1,8 +1,6 @@
-"""Tests for the editor notes plugin."""
-
-import pytest
-import re
 from pathlib import Path
+
+import snick
 
 from mkdocs_editor_notes.constants import NOTE_DEF_PATTERN, NOTE_REF_PATTERN
 from mkdocs_editor_notes.plugin import EditorNotesPlugin
@@ -10,12 +8,11 @@ from mkdocs_editor_notes.models import EditorNote
 
 
 def test_editor_note_model():
-    """Test EditorNote dataclass."""
     note = EditorNote(
         note_type="todo",
         label="fix-bug",
         text="Fix the bug in the code",
-        source_page="index.md",
+        source_page=Path("index.md"),
         ref_id="para-1",
     )
 
@@ -26,147 +23,137 @@ def test_editor_note_model():
 
 
 def test_plugin_initialization():
-    """Test plugin initializes correctly."""
     plugin = EditorNotesPlugin()
 
     assert plugin.notes == []
 
 
 def test_plugin_config():
-    """Test plugin configuration."""
     plugin = EditorNotesPlugin()
     plugin.load_config(
-        {
-            "show_markers": True,
-            "note_types": ["todo", "ponder"],
-            "enable_highlighting": False,
-        }
+        dict(
+            show_markers=True,
+            aggregator_page="jawa/ewok.md",
+            note_type_emojis=dict(
+                jawa="🥷",
+                ewok="🐻",
+            ),
+        )
     )
 
-    assert plugin.config["show_markers"] is True
-    assert plugin.config["note_types"] == ["todo", "ponder"]
-    assert plugin.config["enable_highlighting"] is False
+    assert plugin.config.show_markers is True
+    assert plugin.config.aggregator_page == "jawa/ewok.md"
+    assert plugin.config.note_type_emojis == dict(
+        jawa="🥷",
+        ewok="🐻",
+    )
 
 
-def test_note_pattern_matching():
-    """Test regex patterns for note extraction."""
-    # Test definition pattern - single line
-    text1 = "[^todo:test-note]: This is a test note"
-    match1 = NOTE_DEF_PATTERN.match(text1)
-    assert match1
-    assert match1.group("type") == "todo"
-    assert match1.group("label") == "test-note"
-    assert match1.group("text").strip() == "This is a test note"
-
-    # Test that unlabeled notes don't match
-    text2 = "[^ponder]: Think about this"
-    match2 = NOTE_DEF_PATTERN.match(text2)
-    assert match2 is None
-
-    # Test multiline note definition
-    text3 = """[^improve:multiline]:
-This is line one.
-This is line two.
-This is line three.
-
-This should not be captured."""
-    match3 = NOTE_DEF_PATTERN.search(text3)
-    assert match3
-    assert match3.group("type") == "improve"
-    assert match3.group("label") == "multiline"
-    text = match3.group("text").strip()
-    assert "This is line one." in text
-    assert "This is line two." in text
-    assert "This is line three." in text
-    assert "This should not be captured" not in text
-
-    # Test reference pattern
-    text4 = "Some text[^todo:label] more text"
-    match4 = NOTE_REF_PATTERN.search(text4)
-    assert match4
-    assert match4.group("type") == "todo"
-    assert match4.group("label") == "label"
-
-    # Test that unlabeled references don't match
-    text5 = "Some text[^todo] more text"
-    match5 = NOTE_REF_PATTERN.search(text5)
-    assert match5 is None
+def test_note_pattern_matching__single_line():
+    text = "[^todo:test-note]: This is a test note"
+    match = NOTE_DEF_PATTERN.match(text)
+    assert match
+    assert match.group("type") == "todo"
+    assert match.group("label") == "test-note"
+    assert match.group("text").strip() == "This is a test note"
 
 
-
-def test_note_definition_removal():
-    """Test that note definitions are removed from markdown."""
-    markdown = """
-Test paragraph.[^todo:test]
-
-[^todo:test]: Test note
-Another paragraph.
-"""
-
-    def_pattern = re.compile(r"^\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]:\s+(.+)$", re.MULTILINE)
-    result = def_pattern.sub("", markdown)
-
-    assert "[^todo:test]: Test note" not in result
-    assert "Test paragraph" in result
-    assert "Another paragraph" in result
+def test_note_pattern_matching__skip_unlabeled_notes():
+    text = "[^ponder]: Think about this"
+    match = NOTE_DEF_PATTERN.match(text)
+    assert match is None
 
 
-def test_note_reference_removal():
-    """Test that note references can be removed."""
-    markdown = "Test paragraph.[^todo:test] More text."
+def test_note_pattern_matching__multiline_note_definition():
+    text = snick.dedent(
+        """
+        [^improve:multiline]:
+        This is line one.
+        This is line two.
+        This is line three.
 
-    ref_pattern = re.compile(r"\[\^([a-z]+)(?::([a-z0-9\-_]+))?\]")
-    result = ref_pattern.sub("", markdown)
-
-    assert "[^todo:test]" not in result
-    assert "Test paragraph" in result
-    assert "More text" in result
-
-
-def test_note_reference_replacement():
-    """Test that note references can be replaced with HTML."""
-    markdown = "Test paragraph.[^todo:test] More text."
-
-    def replace_ref(match):
-        note_type = match.group("type")
-        note_label = match.group("label")
-        label_text = f":{note_label}" if note_label else ""
-        return f'<sup class="editor-note-marker editor-note-{note_type}">[{note_type}{label_text}]</sup>'
-
-    result = NOTE_REF_PATTERN.sub(replace_ref, markdown)
-
-    assert "editor-note-marker" in result
-    assert "todo:test" in result
+        This should not be captured.
+        """
+    )
+    match = NOTE_DEF_PATTERN.search(text)
+    assert match
+    assert match.group("type") == "improve"
+    assert match.group("label") == "multiline"
+    text = match.group("text").strip()
+    assert text == snick.dedent(
+        """
+        This is line one.
+        This is line two.
+        This is line three.
+        """
+    )
 
 
-def test_aggregator_markdown_generation():
-    """Test aggregator markdown generation."""
-    from mkdocs_editor_notes.plugin import EditorNotesPluginConfig
-    from tempfile import TemporaryDirectory
+def test_note_pattern_matching__reference_pattern():
+    text = "Some text[^todo:label] more text"
+    match = NOTE_REF_PATTERN.search(text)
+    assert match
+    assert match.group("type") == "todo"
+    assert match.group("label") == "label"
+
+def test_note_pattern_matching__skip_unlabeled_references():
+    text = "Some text[^todo] more text"
+    match = NOTE_REF_PATTERN.search(text)
+    assert match is None
+
+
+def test_aggregator_markdown_generation(tmp_path: Path):
+    docs_dir = tmp_path / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
 
     plugin = EditorNotesPlugin()
-    plugin.config = EditorNotesPluginConfig()
-    plugin.config.load_dict({"note_type_emojis": {}, "aggregator_page": "editor-notes.md"})
+    plugin.load_config(
+        dict(
+            docs_dir=str(docs_dir),
+            show_markers=True,
+            aggregator_page="jawa/ewok.md",
+            note_type_emojis=dict(
+                jawa="🥷",
+                ewok="🐻",
+            ),
+        )
+    )
 
-    with TemporaryDirectory() as tmpdir:
-        plugin.on_config({"docs_dir": tmpdir})  # Initialize emojis
-        tmpdir_path = Path(tmpdir)
+    plugin.notes = [
+        EditorNote(
+            note_type="todo",
+            label="fix-bug",
+            text="Fix the bug",
+            source_page=Path("index.md"),
+            ref_id="para-1",
+        ),
+        EditorNote(
+            note_type="ponder",
+            label="question",
+            text="Think about this",
+            source_page=Path("features.md"),
+            ref_id="para-2"
+        ),
+        EditorNote(
+            note_type="todo",
+            label="improve",
+            text="Make it better",
+            source_page=Path("index.md"),
+            ref_id="para-3"
+        ),
+    ]
 
-        # Add some test notes
-        plugin.notes = [
-            EditorNote("todo", "fix-bug", "Fix the bug", Path("index.md"), "para-1"),
-            EditorNote("ponder", "question", "Think about this", Path("features.md"), "para-2"),
-            EditorNote("todo", "improve", "Make it better", Path("index.md"), "para-3"),
-        ]
+    plugin.build_aggregator_markdown()
 
-        plugin.build_aggregator_markdown(tmpdir_path)
-        aggregator_file = tmpdir_path / "editor-notes.md"
-        md = aggregator_file.read_text()
-
-        assert "# Editor Notes" in md
-        assert "## ✅ Todo" in md  # Check for section header
-        assert "## ⏳ Ponder" in md
-        assert "fix-bug" in md
-        assert "question" in md
-        assert "Fix the bug" in md
-        assert "Think about this" in md
+    assert plugin.aggregator_path.read_text() == snick.dedent(
+        """
+        We want to test against the actual doc, muthafucka!
+        """
+    )
+    # assert "# Editor Notes" in md
+    # assert "## ✅ Todo" in md  # Check for section header
+    # assert "## ⏳ Ponder" in md
+    # assert "fix-bug" in md
+    # assert "question" in md
+    # assert "Fix the bug" in md
+    # assert "Think about this" in md

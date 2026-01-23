@@ -396,6 +396,7 @@ source = { editable = "." }
 dependencies = [
     { name = "markdown" },
     { name = "mkdocs" },
+    { name = "snick" },
 ]
 
 [package.dev-dependencies]
@@ -419,6 +420,7 @@ dev = [
 requires-dist = [
     { name = "markdown", specifier = ">=3.4.0" },
     { name = "mkdocs", specifier = ">=1.5.0" },
+    { name = "snick", specifier = ">=3.0.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -858,6 +860,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "snick"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/7c/9a7ab0b4900160b02634f98f99a9d25517e1de8cb1ad09605d3def9b62a6/snick-3.0.0.tar.gz", hash = "sha256:5141340a50c7e0e08b213df78f6a4770336a36465b22a075ee9afcce408f7793", size = 6203, upload-time = "2026-01-23T03:42:25.066Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ff/fc/a08ef34f79573379c2535a1000dd3b05cd586a7a9d3b914e726ae1360873/snick-3.0.0-py3-none-any.whl", hash = "sha256:b391afec7979070f909287c95f68b2df119132ca5839e2f120cdd2dcc0bfabc6", size = 7351, upload-time = "2026-01-23T03:42:25.854Z" },
 ]
 
 [[package]]

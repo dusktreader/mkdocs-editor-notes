@@ -11,8 +11,8 @@ class EditorNote:
     label: str
     text: str
     source_page: str
-    paragraph_id: str | None = None
-    line_number: int | None = None
+    ref_id: str | None = None
+    line_number: int = 0
 
     @property
     def note_id(self) -> str:
@@ -21,3 +21,7 @@ class EditorNote:
     @property
     def note_key(self) -> str:
         return f"{self.note_type}:{self.label}"
+
+    @property
+    def hover_text(self) -> str:
+        return f"{self.note_type}: {self.label}"

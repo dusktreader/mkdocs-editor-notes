@@ -15,7 +15,7 @@ def test_editor_note_model():
         label="fix-bug",
         text="Fix the bug in the code",
         source_page="index.md",
-        paragraph_id="para-1",
+        ref_id="para-1",
     )
 
     assert note.note_type == "todo"
@@ -142,11 +142,11 @@ def test_aggregator_markdown_generation():
     """Test aggregator markdown generation."""
     from mkdocs_editor_notes.plugin import EditorNotesPluginConfig
     from tempfile import TemporaryDirectory
-    
+
     plugin = EditorNotesPlugin()
     plugin.config = EditorNotesPluginConfig()
     plugin.config.load_dict({"note_type_emojis": {}, "aggregator_page": "editor-notes.md"})
-    
+
     with TemporaryDirectory() as tmpdir:
         plugin.on_config({"docs_dir": tmpdir})  # Initialize emojis
 

@@ -1,16 +1,17 @@
 """MkDocs plugin for aggregating editor notes."""
 
-import hashlib
 import re
 from pathlib import Path
-from typing import Any, override
+from typing import Callable, override
+
+import snick
 
 from mkdocs.config import config_options
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import Type
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import Files, File
+from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
 from mkdocs_editor_notes.constants import (
@@ -24,37 +25,40 @@ from mkdocs_editor_notes.models import EditorNote
 
 
 class EditorNotesPluginConfig(Config):
-    """Configuration for the EditorNotes plugin."""
-
     show_markers: Type[bool] = config_options.Type(bool, default=False)
     note_type_emojis: Type[dict[str, str]] = config_options.Type(dict, default={})
-    aggregator_page: Type[str] = config_options.Type(str, default="editor-notes.md")
+    aggregator_page: Type[Path] = config_options.Type(Path, default=Path("editor-notes.md"))
 
 
 class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
-    """MkDocs plugin to aggregate editor notes from documentation."""
-
     config: EditorNotesPluginConfig
-    notes: list[EditorNote]
+    note_map: dict[str, EditorNote]
     note_type_emojis: dict[str, str]
 
     def __init__(self) -> None:
         super().__init__()
-        self.notes = []
+        self.note_map = {}
         self.note_type_emojis = {}
 
     @override
     def on_config(self, config: MkDocsConfig) -> MkDocsConfig:
-        """Setup configuration and emoji mappings."""
         self.note_type_emojis = {
             **FIXED_NOTE_TYPES,
             **self.config.note_type_emojis,
         }
 
-        docs_dir = Path(config["docs_dir"])
+        docs_dir = Path(config.docs_dir)
         aggregator_file = docs_dir / self.config.aggregator_page
         if not aggregator_file.exists():
-            aggregator_file.write_text("# Editor Notes\n\nThis page will be generated during the build.\n")
+            aggregator_file.write_text(
+                snick.dedent(
+                    """
+                    # Editor Notes
+
+                    This page will be generated during the build.
+                    """
+                )
+            )
 
         return config
 
@@ -64,130 +68,117 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
     def get_emoji(self, note_type: str) -> str:
         return self.note_type_emojis.get(note_type, DEFAULT_CUSTOM_EMOJI)
 
-    @override
-    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
-        note_to_ref = {}
-        ref_counter = 0
-
-        # Protect code blocks by temporarily replacing them
-        code_blocks: list[str] = []
+    @staticmethod
+    def _protect_code_blocks(markdown: str, code_blocks: list[str]) -> str:
+        """Protect code blocks by replacing them with placeholders."""
 
         def save_code_block(match: re.Match[str]) -> str:
             code_blocks.append(match.group(0))
             return f"<<<CODE_BLOCK_{len(code_blocks) - 1}>>>"
 
-        markdown_protected = CODE_BLOCK_PATTERN.sub(save_code_block, markdown)
+        return CODE_BLOCK_PATTERN.sub(save_code_block, markdown)
 
-        # Find all note definitions and extract them
-        for match in NOTE_DEF_PATTERN.finditer(markdown_protected):
-            note_type = match.group("type")
-            note_label = match.group("label")
-            note_text = match.group("text").strip()
-
-            # Create EditorNote object (we'll set paragraph_id later)
-            note = EditorNote(
-                note_type=note_type,
-                label=note_label,
-                text=note_text,
-                source_page=page.file.src_uri,
-            )
-
-            note_to_ref[note.note_key] = note
-
-        # Process line by line to find note references and add anchors
-        lines = markdown_protected.split("\n")
-        processed_lines = []
-
-        for line in lines:
-            ref_match = NOTE_REF_PATTERN.search(line)
-            if ref_match:
-                note_type = ref_match.group("type")
-                note_label = ref_match.group("label")
-                note_key = f"{note_type}:{note_label}"
-
-                # Generate paragraph ID for this note
-                ref_counter += 1
-                ref_id = f"editor-note-para-{ref_counter}"
-
-                # Set the paragraph ID and line number for the note
-                if note_key in note_to_ref:
-                    note_to_ref[note_key].paragraph_id = ref_id
-                    # Store line number (approximate, based on position in file)
-                    note_to_ref[note_key].line_number = len(processed_lines) + 1
-
-                # Add anchor span at the start of the line
-                line = f'<span id="{ref_id}"></span>{line}'
-
-            processed_lines.append(line)
-
-        markdown = "\n".join(processed_lines)
-
-        # Add notes to collection
-        for note in note_to_ref.values():
-            if note.paragraph_id:  # Only add if we found a reference
-                self.notes.append(note)
-
-        # Remove note definitions from markdown (they can span multiple lines)
-        markdown = NOTE_DEF_PATTERN.sub("", markdown)
-        # Clean up any extra newlines left behind
-        markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
-
-        # Remove note references if show_markers is False
-        if not self.config["show_markers"]:
-            markdown = NOTE_REF_PATTERN.sub("", markdown)
-        else:
-            # Replace with clickable markers linking to aggregator
-            def replace_ref(match):
-                note_type = match.group("type")
-                note_label = match.group("label")
-                note_key = f"{note_type}:{note_label}"
-
-                # Generate a unique ID for this note for linking to aggregator
-                if note_key in note_to_ref and note_to_ref[note_key].paragraph_id:
-                    note_id = f"note-{note_to_ref[note_key].paragraph_id}"
-                    paragraph_id = note_to_ref[note_key].paragraph_id
-                    # Use matching emoji for this note type
-                    marker_symbol = self.get_emoji(note_type)
-                    # Create hover text with type and label
-                    hover_text = f"{note_type}: {note_label}"
-                    # Link to aggregator page using markdown format
-                    aggregator_path = self.config.get("aggregator_page", "editor-notes.md")
-                    # Use markdown link format which MkDocs will handle correctly
-                    return f'<sup class="editor-note-marker"><a href="{aggregator_path}#{note_id}" title="{hover_text}">{marker_symbol}</a></sup>'
-                return ""
-
-            markdown = NOTE_REF_PATTERN.sub(replace_ref, markdown)
-
-        # Restore code blocks
+    @staticmethod
+    def _restore_code_blocks(markdown: str, code_blocks: list[str]) -> str:
         for i, code_block in enumerate(code_blocks):
             markdown = markdown.replace(f"<<<CODE_BLOCK_{i}>>>", code_block)
 
         return markdown
 
+    def _find_note_defs(self, markdown: str, page: Page):
+        for match in NOTE_DEF_PATTERN.finditer(markdown):
+            note_type = match.group("type")
+            note_label = match.group("label")
+            note_text = match.group("text").strip()
+
+            note = EditorNote(
+                note_type=note_type,
+                label=note_label,
+                text=note_text,
+                source_page=Path(page.file.src_uri),
+            )
+
+            self.note_map[note.note_key] = note
+
+    def _find_note_refs(self, markdown: str) -> str:
+        ref_counter = 0
+        lines = markdown.split("\n")
+        for line_number, line in enumerate(lines):
+            ref_match = NOTE_REF_PATTERN.search(line)
+            if not ref_match:
+                continue
+
+            note_type = ref_match.group("type")
+            note_label = ref_match.group("label")
+            note_key = f"{note_type}:{note_label}"
+
+            ref_counter += 1
+            ref_id = f"editor-note-para-{ref_counter}"
+
+            note: EditorNote | None = self.note_map.get(note_key)
+            if note:
+                note.ref_id = ref_id
+                # WARN: this might be approximate based on the position in the file
+                note.line_number = line_number + 1
+            # TODO: log a warning if note isn't found? Throw an exception?
+
+            lines[line_number] = f'<span id="{ref_id}"></span>{line}'
+
+        return "\n".join(lines)
+
+    def get_ref_replacer(self) -> Callable[[re.Match[str]], str] | str:
+        if not self.config.show_markers:
+            return ""
+
+        def replacer(match: re.Match[str]):
+            note_type = match.group("type")
+            note_label = match.group("label")
+            note_key = f"{note_type}:{note_label}"
+
+            note: EditorNote | None = self.note_map.get(note_key)
+            if not note or not note.ref_id:
+                # TODO: should we throw an error or log one here?
+                return ""
+
+            # TODO: should this be using the note's node_id property?
+            return snick.dedent(
+                f"""
+                <sup class="editor-note-marker">
+                    <a href="{self.config.aggregator_page}#note-{note.ref_id}" title="{note.hover_text}">
+                    {self.get_emoji(note_type)},
+                    </a>
+                </sup>
+                """
+            )
+
+        return replacer
+
+    @override
+    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str | None:
+        code_blocks: list[str] = []
+        markdown = self._protect_code_blocks(markdown, code_blocks)
+        self._find_note_defs(markdown, page)
+        markdown = self._find_note_refs(markdown)
+        markdown = NOTE_DEF_PATTERN.sub("", markdown)
+        markdown = re.sub(r"\n\n\n+", "\n\n", markdown)
+        markdown = NOTE_REF_PATTERN.sub(self.get_ref_replacer(), markdown)
+        markdown = self._restore_code_blocks(markdown, code_blocks)
+        return markdown
+
     @override
     def on_env(self, env, config: MkDocsConfig, files: Files):
         """Write aggregator markdown file after pages are processed but before rendering."""
-        # This runs after on_page_markdown for all pages, so we have all notes
-        if self.notes:
-            # Generate the aggregator page as markdown
-            aggregator_md = self._generate_aggregator_markdown()
-
-            # Write markdown file to docs directory
-            docs_dir = Path(config["docs_dir"])
-            aggregator_file = docs_dir / self.config["aggregator_page"]
-            aggregator_file.write_text(aggregator_md)
-
+        self.build_aggregator_markdown(Path(config.docs_dir))
         return env
 
     @override
     def on_post_page(self, output: str, page, config: MkDocsConfig) -> str:
         """Inject CSS and fix marker links."""
         # Fix marker links to point to proper URLs (remove .md extension)
-        aggregator_page = self.config.get("aggregator_page", "editor-notes.md")
-        aggregator_url = aggregator_page.replace(".md", "/")
+        aggregator_page = self.config.aggregator_page
+        aggregator_url = aggregator_page.stem
         output = output.replace(f'href="{aggregator_page}#', f'href="{aggregator_url}#')
 
-        # Load CSS and JS from static files
         static_dir = Path(__file__).parent / "static"
         css_file = static_dir / "editor-notes.css"
         js_file = static_dir / "editor-notes.js"
@@ -195,168 +186,156 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         css_content = css_file.read_text()
         js_content = js_file.read_text()
 
-        inject_content = f"""
-<style>
-{css_content}
-</style>
-<script>
-{js_content}
-</script>
-"""
+        inject_content = snick.dedent(
+            f"""
+            <style>
+            {css_content}
+            </style>
+            <script>
+            {js_content}
+            </script>
+            """
+        )
+
         # Inject before </head>
         if "</head>" in output:
             output = output.replace("</head>", f"{inject_content}</head>")
         return output
 
-    @override
-    def on_post_build(self, config: MkDocsConfig) -> None:
-        """Cleanup after build."""
-        pass
+    def build_aggregator_markdown(self, docs_dir: Path) -> None:
+        if not self.note_map:
+            # TODO: warn?
+            return
 
-    def _generate_aggregator_markdown(self) -> str:
-        """Generate markdown content for the aggregator page."""
-        # Group notes by type
-        notes_by_type: dict[str, list[EditorNote]] = {}
-        for note in self.notes:
-            notes_by_type.setdefault(note.note_type, []).append(note)
+        type_map: dict[str, list[EditorNote]] = {}
+        fixed_types: set[str] = set()
+        custom_types: set[str] = set()
+        for note in self.note_map.values():
+            type_map.setdefault(note.note_type, []).append(note)
+            if self.is_fixed_type(note.note_type):
+                fixed_types.add(note.note_type)
+            else:
+                custom_types.add(note.note_type)
 
-        # Separate fixed and custom types
-        fixed_types = [t for t in sorted(notes_by_type.keys()) if self.is_fixed_type(t)]
-        custom_types = [t for t in sorted(notes_by_type.keys()) if not self.is_fixed_type(t)]
+        md_parts = snick.Conjoiner()
+        md_parts.add(
+            """
+            ---
+            toc_depth: 2
+            ---
 
-        # Build markdown content with front matter to configure TOC
-        md_parts = [
-            "---",
-            "toc_depth: 2",
-            "---",
-            "",
-            "# Editor Notes",
-            "",
-            "This page aggregates all editor notes found throughout the documentation.",
-            "",
-        ]
+            # Editor Notes
 
-        # Add fixed note types first
+            This page aggregates all editor notes found throughout the documentation.
+            """,
+            blanks_after=2,
+        )
+
         for note_type in fixed_types:
-            notes = notes_by_type[note_type]
+            notes = type_map[note_type]
             emoji = self.get_emoji(note_type)
-            md_parts.append(f"## {emoji} {note_type.capitalize()}")
-            md_parts.append("")
+            md_parts.add(f"## {emoji} {note_type.capitalize()}", blanks_after=1)
 
             for note in notes:
-                # Add anchor for linking from markers
-                note_id = f"note-{note.paragraph_id}"
+                note_id = f"note-{note.ref_id}"
+                md_parts.add(
+                    """
+                    <div class="editor-note-entry">
+                        <span id="{note_id}"></span>
+                        <h4>
+                            {note.label} (
+                            <a href="{note.source_page.stem}#{note.ref_id}">
+                                {note.source_page}:{note.line_number}
+                            </a>
+                            )
+                        </h4>
+                        <p>{note.text}</p>
+                    </div>
+                    """,
+                    blanks_before=1,
+                )
 
-                # Format identifier as H4 with source link
-                identifier = note.label
-                source_file = note.source_page
-                line_num = note.line_number or 0
-
-                # Convert source file path to relative URL
-                # Both aggregator and source pages are in the same directory
-                source_url = source_file.replace(".md", "/")
-                link_path = f"{source_url}#{note.paragraph_id}"
-
-                # Use pure HTML for the entry
-                md_parts.append(f'<div class="editor-note-entry">')
-                md_parts.append(f'<span id="{note_id}"></span>')
-                md_parts.append(f'<h4>{identifier} (<a href="{link_path}">{source_file}:{line_num}</a>)</h4>')
-                md_parts.append(f"<p>{note.text}</p>")
-                md_parts.append("</div>")
-                md_parts.append("")
-
-            md_parts.append("")
-
-        # Add custom note types at the bottom
         if custom_types:
-            md_parts.append("## Custom Notes")
-            md_parts.append("")
+            md_parts.add("## Custom Notes", blanks_before=1, blanks_after=1)
 
             for note_type in custom_types:
-                notes = notes_by_type[note_type]
+                notes = type_map[note_type]
                 emoji = self.get_emoji(note_type)
-                md_parts.append(f"### {emoji} {note_type}")
-                md_parts.append("")
+                md_parts.add(f"### {emoji} {note_type}", blanks_before=1, blanks_after=1)
 
                 for note in notes:
-                    # Add anchor for linking from markers
-                    note_id = f"note-{note.paragraph_id}"
+                    note_id = f"note-{note.ref_id}"
+                    link_path = f"{note.source_page.stem}#{note.ref_id}"
 
-                    # Format identifier as H4 with source link
-                    identifier = note.label
-                    source_file = note.source_page
-                    line_num = note.line_number or 0
+                    md_parts.add(
+                        f"""
+                        <div class="editor-note-entry">
+                            <span id="{note_id}"></span>
+                            <h4>{note.label} (<a href="{link_path}">{note.source_page}:{note.line_number}</a>)</h4>
+                            <p>{note.text}</p>
+                        </div>
+                        """,
+                        blanks_before=1,
+                    )
 
-                    # Convert source file path to relative URL
-                    # Both aggregator and source pages are in the same directory
-                    source_url = source_file.replace(".md", "/")
-                    link_path = f"{source_url}#{note.paragraph_id}"
-
-                    # Use pure HTML for the entry
-                    md_parts.append(f'<div class="editor-note-entry">')
-                    md_parts.append(f'<span id="{note_id}"></span>')
-                    md_parts.append(f'<h4>{identifier} (<a href="{link_path}">{source_file}:{line_num}</a>)</h4>')
-                    md_parts.append(f"<p>{note.text}</p>")
-                    md_parts.append("</div>")
-                    md_parts.append("")
-
-                md_parts.append("")
-
-        return "\n".join(md_parts)
+        aggregator_file = docs_dir / self.config.aggregator_page
+        aggregator_file.write_text(str(md_parts))
 
     def _get_inline_css(self) -> str:
         """Get inline CSS for the aggregator page."""
-        return """
-.editor-note-item {
-    margin: 15px 0;
-    padding: 12px;
-    border-left: 4px solid #2196F3;
-    background: #f5f9ff;
-    border-radius: 4px;
-}
-.editor-note-label {
-    font-weight: 600;
-    color: #1976D2;
-    margin-bottom: 4px;
-    font-size: 1.1em;
-}
-.editor-note-text {
-    margin: 8px 0;
-    line-height: 1.6;
-}
-.editor-note-source {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 8px;
-}
-.editor-note-source a {
-    color: #1976D2;
-    text-decoration: none;
-}
-.editor-note-source a:hover {
-    text-decoration: underline;
-}
-:target {
-    background-color: #ffffcc !important;
-    animation: highlight-fade 3s ease-out;
-    padding: 8px;
-    margin: -8px;
-    border-radius: 4px;
-}
-@keyframes highlight-fade {
-    from { background-color: #ffff99; }
-    50% { background-color: #ffffcc; }
-    to { background-color: transparent; }
-}
-.editor-note-marker {
-    font-size: 0.75em;
-    color: #1976D2;
-    margin-left: 2px;
-    padding: 2px 4px;
-    background: #e3f2fd;
-    border-radius: 3px;
-}
-"""
+        return snick.dedent(
+            """
+            .editor-note-item {
+                margin: 15px 0;
+                padding: 12px;
+                border-left: 4px solid #2196F3;
+                background: #f5f9ff;
+                border-radius: 4px;
+            }
+            .editor-note-label {
+                font-weight: 600;
+                color: #1976D2;
+                margin-bottom: 4px;
+                font-size: 1.1em;
+            }
+            .editor-note-text {
+                margin: 8px 0;
+                line-height: 1.6;
+            }
+            .editor-note-source {
+                font-size: 0.9em;
+                color: #666;
+                margin-top: 8px;
+            }
+            .editor-note-source a {
+                color: #1976D2;
+                text-decoration: none;
+            }
+            .editor-note-source a:hover {
+                text-decoration: underline;
+            }
+            :target {
+                background-color: #ffffcc !important;
+                animation: highlight-fade 3s ease-out;
+                padding: 8px;
+                margin: -8px;
+                border-radius: 4px;
+            }
+            @keyframes highlight-fade {
+                from { background-color: #ffff99; }
+                50% { background-color: #ffffcc; }
+                to { background-color: transparent; }
+            }
+            .editor-note-marker {
+                font-size: 0.75em;
+                color: #1976D2;
+                margin-left: 2px;
+                padding: 2px 4px;
+                background: #e3f2fd;
+                border-radius: 3px;
+            }
+            """
+        )
 
     def _markdown_to_html(self, markdown_text: str) -> str:
         """Convert markdown to HTML (simple implementation)."""

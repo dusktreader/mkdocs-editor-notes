@@ -12,6 +12,7 @@ requires-python = ">=3.12, ~=3.14"
 dependencies = [
     "mkdocs>=1.5.0",
     "markdown>=3.4.0",
+    "snick>=3.0.0",
 ]
 
 

@@ -59,7 +59,127 @@
 
     
     
-  </head>
+  <style>
+            /* CSS Custom Properties for theme integration */
+:root {
+    /* Tooltip colors - fallback to neutral dark/light */
+    --editor-note-tooltip-bg: var(--md-default-fg-color--light, #333);
+    --editor-note-tooltip-fg: var(--md-default-bg-color, white);
+
+    /* Highlight colors - fallback to soft yellow */
+    --editor-note-highlight-bg: var(--md-accent-fg-color--transparent, rgba(255, 253, 231, 0.5));
+    --editor-note-highlight-intense: var(--md-accent-fg-color, #ffeb3b);
+}
+
+/* Fast tooltip display */
+.editor-note-marker a {
+    position: relative;
+}
+.editor-note-marker a[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: var(--editor-note-tooltip-bg);
+    color: var(--editor-note-tooltip-fg);
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 1000;
+    margin-bottom: 4px;
+    transition: none;
+    animation: none;
+}
+/* Remove default tooltip */
+.editor-note-marker a[title] {
+    position: relative;
+}
+/* Highlight reference anchors when targeted (from aggregator links) */
+span[id^="ref-"]:target {
+    display: inline;
+}
+/* Highlight aggregator entries when targeted (from marker links) */
+span[id^="agg-"]:target {
+    animation: none;
+}
+.editor-note-highlight {
+    background-color: var(--editor-note-highlight-bg);
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+}
+.editor-note-highlight-fade {
+    background-color: transparent;
+    transition: background-color 2s ease-out;
+}
+@keyframes highlight-fade {
+    0% { background-color: var(--editor-note-highlight-intense); }
+    100% { background-color: transparent; }
+}
+
+            </style>
+
+            <script>
+            // Editor Notes Configuration
+            window.EDITOR_NOTES_CONFIG = {
+                highlightDuration: 3000,
+                highlightFadeDuration: 2000
+            };
+            </script>
+
+            <script>
+            function clearAllHighlights() {
+    document.querySelectorAll('.editor-note-highlight').forEach(el => {
+        el.classList.remove('editor-note-highlight');
+        el.classList.remove('editor-note-highlight-fade');
+    });
+}
+
+function highlightTarget() {
+    clearAllHighlights();
+
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const target = document.querySelector(hash);
+    if (!target) {
+        console.warn(`[editor-notes] Target element not found for hash: ${hash}`);
+        return;
+    }
+
+    let elementToHighlight = null;
+
+    const config = window.EDITOR_NOTES_CONFIG || {};
+    const HIGHLIGHT_DURATION = config.highlightDuration || 3000; // Stay at full color for 3 seconds
+    const FADE_DURATION = config.highlightFadeDuration || 2000; // Fade for 2 seconds
+
+    if (target.id.startsWith('ref-')) {
+        elementToHighlight = target.parentElement;
+    } else if (target.id.startsWith('agg-')) {
+        elementToHighlight = target.closest('.editor-note-entry');
+    } else {
+        console.warn(`[editor-notes] Unrecognized target ID format: ${target.id} (expected 'ref-*' or 'agg-*')`);
+    }
+
+    if (elementToHighlight) {
+        elementToHighlight.classList.add('editor-note-highlight');
+        setTimeout(() => {
+            elementToHighlight.classList.add('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION);
+        setTimeout(() => {
+            elementToHighlight.classList.remove('editor-note-highlight');
+            elementToHighlight.classList.remove('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION + FADE_DURATION);
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+window.addEventListener('load', highlightTarget);
+window.addEventListener('hashchange', highlightTarget);
+
+            </script></head>
   
   
     
@@ -394,6 +514,178 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Using">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-editor-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding Editor Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding Editor Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#todo-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Todo Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ponder-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ponder Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improve-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improve Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-note-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Note Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unlabeled-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unlabeled Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-editor-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Editor Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running the Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serving-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serving the Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to Look For
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -446,6 +738,33 @@
     
   
     Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../editor-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Editor Notes
   
 
     
@@ -532,6 +851,178 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Using">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-editor-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding Editor Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding Editor Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#todo-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Todo Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ponder-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ponder Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improve-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improve Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-note-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Note Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unlabeled-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unlabeled Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-editor-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Editor Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running the Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building the Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serving-the-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serving the Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to Look For
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -565,6 +1056,89 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>mkdocs-editor-notes
 </span></code></pre></div>
 <h2 id="using">Using</h2>
+<h3 id="basic-setup">Basic Setup</h3>
+<p><span id="ref-todo-verify-config"></span>Add the plugin to your <code>mkdocs.yml</code> configuration:<sup class="editor-note-marker">     <a href="../editor-notes#agg-todo-verify-config" title="todo: verify-config">         ✅     </a> </sup></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">plugins</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">editor-notes</span>
+</span></code></pre></div>
+<h3 id="adding-editor-notes">Adding Editor Notes</h3>
+<p><span id="ref-ponder-syntax-alternative"></span>Editor notes use a syntax similar to footnotes.<sup class="editor-note-marker">     <a href="../editor-notes#agg-ponder-syntax-alternative" title="ponder: syntax-alternative">         ⏳     </a> </sup> You can add different types of notes.</p>
+<p><strong>Note:</strong> Labels (like <code>:expand-docs</code> or <code>:scalability</code>) are optional. You can use unlabeled notes or add specific
+labels for better organization.</p>
+<h4 id="todo-notes">Todo Notes</h4>
+<p><span id="ref-improve-better-examples"></span>Use todo notes to mark tasks that need to be completed:<sup class="editor-note-marker">     <a href="../editor-notes#agg-improve-better-examples" title="improve: better-examples">         💡     </a> </sup></p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>This feature needs more documentation.[^todo:expand-docs]
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>[<span class="nl">^todo:expand-docs</span>]: <span class="na">Add examples and API reference</span>
+</span></code></pre></div>
+<h4 id="ponder-notes">Ponder Notes</h4>
+<p>Use ponder notes for questions or things to think about:[^ponder]</p>
+<p>[^ponder]: Is this the best name for this type of note?</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>This approach might not scale well.[^ponder:scalability]
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>[<span class="nl">^ponder:scalability</span>]: <span class="na">Should we benchmark this with larger datasets?</span>
+</span></code></pre></div>
+<h4 id="improve-notes">Improve Notes</h4>
+<p>Mark areas for improvement:</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>The error handling here is basic.[^improve:error-handling]
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>[<span class="nl">^improve:error-handling</span>]: <span class="na">Add specific error types and better messages</span>
+</span></code></pre></div>
+<h4 id="research-notes">Research Notes</h4>
+<p><span id="ref-research-alternatives"></span>Mark items that need research:<sup class="editor-note-marker">     <a href="../editor-notes#agg-research-alternatives" title="research: alternatives">         🔍     </a> </sup></p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>We could use a different markdown parser.[^research:parser-options]
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>[<span class="nl">^research:parser-options</span>]: <span class="na">Research python-markdown alternatives</span>
+</span></code></pre></div>
+<h4 id="custom-note-types">Custom Note Types</h4>
+<p><span id="ref-question-custom-examples"></span>You can use any note type you want - they're automatically discovered:<sup class="editor-note-marker">     <a href="../editor-notes#agg-question-custom-examples" title="question: custom-examples">         ❓     </a> </sup></p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>This might be a bug.[^bug:rendering-issue]
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>[<span class="nl">^bug:rendering-issue</span>]: <span class="na">Investigate why this renders incorrectly in Safari</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>I have a question about this.[^question:performance]
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>[<span class="nl">^question:performance</span>]: <span class="na">Will this approach scale?</span>
+</span></code></pre></div>
+<p>Custom types like <code>bug</code> and <code>question</code> automatically appear in a "Custom Notes" section with ❗ emoji by default.</p>
+<h3 id="unlabeled-notes">Unlabeled Notes</h3>
+<p>Labels are optional. You can create notes without specific labels:</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>This needs some thought.[^ponder]
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>[<span class="nl">^ponder</span>]: <span class="na">Should we consider a different approach here?</span>
+</span></code></pre></div>
+<p>Without a label, the note is still tracked and displayed in the aggregator, but won't have a specific identifier
+beyond its type.</p>
+<h3 id="viewing-editor-notes">Viewing Editor Notes</h3>
+<p>All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to
+<code>/editor-notes/</code> to view all notes grouped by type with links back to their source locations.</p>
+<h2 id="running-the-example">Running the Example</h2>
+<p>This repository includes a complete example MkDocs site that demonstrates the plugin's features in action. The example
+site is a fictional "SpiceFlow API" documentation that showcases various types of editor notes throughout its pages.</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Make sure you have the development dependencies installed:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>uv<span class="w"> </span>sync
+</span></code></pre></div>
+<h3 id="building-the-example">Building the Example</h3>
+<p>To build the example site:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>make<span class="w"> </span>example/build
+</span></code></pre></div>
+<p>This will generate the static site in the <code>example/site/</code> directory.</p>
+<h3 id="serving-the-example">Serving the Example</h3>
+<p>To serve the example site locally with live reload:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>make<span class="w"> </span>example/serve
+</span></code></pre></div>
+<p>The example site will be available at <code>http://localhost:10001</code>. Navigate through the documentation to see inline editor
+notes, then visit the <code>/editor-notes/</code> page to see all collected notes organized by type.</p>
+<h3 id="what-to-look-for">What to Look For</h3>
+<p>The example demonstrates:</p>
+<ul>
+<li>Different note types (todo, ponder, improve, research, and custom types like urgent and idea)</li>
+<li>Labeled and unlabeled notes</li>
+<li>Custom emoji configuration</li>
+<li>The aggregator page with source links</li>
+<li>Marker visibility in rendered pages</li>
+</ul>
 
 
 

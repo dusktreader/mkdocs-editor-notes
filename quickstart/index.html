@@ -1057,16 +1057,16 @@ window.addEventListener('hashchange', highlightTarget);
 </span></code></pre></div>
 <h2 id="using">Using</h2>
 <h3 id="basic-setup">Basic Setup</h3>
-<p><span id="ref-todo-verify-config"></span>Add the plugin to your <code>mkdocs.yml</code> configuration:<sup class="editor-note-marker">     <a href="../editor-notes#agg-todo-verify-config" title="todo: verify-config">         ✅     </a> </sup></p>
+<p>Add the plugin to your <code>mkdocs.yml</code> configuration:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">plugins</span><span class="p">:</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">editor-notes</span>
 </span></code></pre></div>
 <h3 id="adding-editor-notes">Adding Editor Notes</h3>
-<p><span id="ref-ponder-syntax-alternative"></span>Editor notes use a syntax similar to footnotes.<sup class="editor-note-marker">     <a href="../editor-notes#agg-ponder-syntax-alternative" title="ponder: syntax-alternative">         ⏳     </a> </sup> You can add different types of notes.</p>
+<p>Editor notes use a syntax similar to footnotes. You can add different types of notes.</p>
 <p><strong>Note:</strong> Labels (like <code>:expand-docs</code> or <code>:scalability</code>) are optional. You can use unlabeled notes or add specific
 labels for better organization.</p>
 <h4 id="todo-notes">Todo Notes</h4>
-<p><span id="ref-improve-better-examples"></span>Use todo notes to mark tasks that need to be completed:<sup class="editor-note-marker">     <a href="../editor-notes#agg-improve-better-examples" title="improve: better-examples">         💡     </a> </sup></p>
+<p>Use todo notes to mark tasks that need to be completed:</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>This feature needs more documentation.[^todo:expand-docs]
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>[<span class="nl">^todo:expand-docs</span>]: <span class="na">Add examples and API reference</span>
@@ -1085,13 +1085,13 @@ labels for better organization.</p>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>[<span class="nl">^improve:error-handling</span>]: <span class="na">Add specific error types and better messages</span>
 </span></code></pre></div>
 <h4 id="research-notes">Research Notes</h4>
-<p><span id="ref-research-alternatives"></span>Mark items that need research:<sup class="editor-note-marker">     <a href="../editor-notes#agg-research-alternatives" title="research: alternatives">         🔍     </a> </sup></p>
+<p>Mark items that need research:</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>We could use a different markdown parser.[^research:parser-options]
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>[<span class="nl">^research:parser-options</span>]: <span class="na">Research python-markdown alternatives</span>
 </span></code></pre></div>
 <h4 id="custom-note-types">Custom Note Types</h4>
-<p><span id="ref-question-custom-examples"></span>You can use any note type you want - they're automatically discovered:<sup class="editor-note-marker">     <a href="../editor-notes#agg-question-custom-examples" title="question: custom-examples">         ❓     </a> </sup></p>
+<p>You can use any note type you want - they're automatically discovered:</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>This might be a bug.[^bug:rendering-issue]
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>[<span class="nl">^bug:rendering-issue</span>]: <span class="na">Investigate why this renders incorrectly in Safari</span>

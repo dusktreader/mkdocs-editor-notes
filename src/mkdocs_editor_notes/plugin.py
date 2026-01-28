@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Callable, override
+from typing import Any, Callable, cast, override
 
 import snick
 from jinja2 import Environment
@@ -24,6 +24,8 @@ from mkdocs_editor_notes.note import EditorNote
 from mkdocs_editor_notes.manager import EditorNotesManager
 
 log = get_plugin_logger(__name__)
+
+MdxConfigs = dict[str, dict[str, Any]]
 
 
 class EditorNotesPluginConfig(Config):
@@ -102,18 +104,15 @@ class EditorNotesPlugin(BasePlugin[EditorNotesPluginConfig]):
         return self.note_manager.process_page_markdown(markdown, page, self.get_ref_replacer(page))
 
     @override
-    def on_nav(  # pyright: ignore[reportIncompatibleMethodOverride] - MkDocs uses dynamic hook discovery
-        self, nav, config: MkDocsConfig, files: Files
-    ):
-        """Navigation is built (not used for now)."""
-        return nav
-
-    @override
     def on_env(  # pyright: ignore[reportIncompatibleMethodOverride] - MkDocs uses dynamic hook discovery
         self, env: Environment, config: MkDocsConfig, files: Files
     ) -> Environment:
         """After all pages are processed, regenerate aggregator page."""
-        self.note_manager.regenerate_aggregator_content(self.get_emoji, config.markdown_extensions, config.mdx_configs)
+        self.note_manager.regenerate_aggregator_content(
+            self.get_emoji,
+            config.markdown_extensions,
+            cast(MdxConfigs, config.mdx_configs),
+        )
         return env
 
     @override

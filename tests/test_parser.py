@@ -1,7 +1,5 @@
 """Tests for markdown parsing utilities."""
 
-import pytest
-
 from mkdocs_editor_notes.manager import LineType, EditorNotesManager
 
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 
+import pytest
 import snick
-from mkdocs.config.defaults import MkDocsConfig
 
 from mkdocs_editor_notes.constants import NOTE_DEF_PATTERN, NOTE_REF_PATTERN
 from mkdocs_editor_notes.plugin import EditorNotesPlugin
@@ -111,7 +111,7 @@ def test_aggregator_markdown_generation(tmp_path: Path):
             label="desert-rat",
             text="Utinni!",
             source_page=Path("index.md"),
-            source_url="",  # Root index page
+            source_url="",
             line_number=13,
         ),
         EditorNote(
@@ -127,7 +127,7 @@ def test_aggregator_markdown_generation(tmp_path: Path):
             label="improve",
             text="Make it better",
             source_page=Path("index.md"),
-            source_url="",  # Root index page
+            source_url="",
             line_number=34,
         ),
         EditorNote(
@@ -143,7 +143,7 @@ def test_aggregator_markdown_generation(tmp_path: Path):
             label="chill",
             text="Now, rest",
             source_page=Path("index.md"),
-            source_url="",  # Root index page
+            source_url="",
             line_number=99,
         ),
     ]
@@ -222,27 +222,23 @@ def test_marker_links__use_agg_id():
         label="test-label",
         text="Test text",
         source_page=Path("index.md"),
-        source_url="",  # Root page
+        source_url="",
         line_number=10,
     )
     plugin.note_manager.add(note)
 
-    # Create a mock page for the test
     from unittest.mock import Mock
 
     mock_page = Mock()
-    mock_page.url = ""  # Root page
+    mock_page.url = ""
 
-    # Get the marker replacement function
     replacer = plugin.get_ref_replacer(mock_page)
     assert callable(replacer), "replacer should be callable when show_markers=True"
 
-    # Create a match object
     test_text = "Some text[^todo:test-label] more text"
     match = NOTE_REF_PATTERN.search(test_text)
     assert match
 
-    # Get the replacement HTML
     result = replacer(match)
 
     # Verify the link uses agg_id (agg-todo-test-label) not ref_id (ref-todo-test-label)
@@ -274,36 +270,30 @@ def test_plugin_config__default_highlight_durations():
     assert plugin.config.highlight_fade_duration == 2000
 
 
-def test_undefined_note_reference__logs_warning(tmp_path: Path, caplog):
+def test_undefined_note_reference__logs_warning(caplog: pytest.LogCaptureFixture) -> None:
     """Verify that undefined note references generate warnings."""
     import logging
     from unittest.mock import Mock
 
-    # Set up logging capture
     caplog.set_level(logging.WARNING)
 
     plugin = EditorNotesPlugin()
     plugin.load_config(dict())
 
-    # Create a mock page
     mock_page = Mock()
     mock_page.file.src_uri = "test.md"
 
-    # Mock config and files
     mock_config = Mock()
     mock_files = Mock()
 
-    # Markdown with a reference to an undefined note
     markdown = snick.dedent(
         """
         This is some text with a reference[^todo:undefined-note] to a note that doesn't exist.
         """
     )
 
-    # Process the markdown (should trigger warning)
-    result = plugin.on_page_markdown(markdown, mock_page, mock_config, mock_files)
+    plugin.on_page_markdown(markdown, mock_page, mock_config, mock_files)
 
-    # Check that warning was logged
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "WARNING"
     assert "Undefined note reference" in caplog.records[0].message
@@ -320,13 +310,13 @@ def test_note_refs_in_headings():
 
     markdown = snick.dedent("""
         # Test Heading[^todo:heading-fix]
-        
+
         Some content.
-        
+
         ## Subheading[^ponder:subheading]
-        
+
         More content.
-        
+
         [^todo:heading-fix]: Fix this heading
         [^ponder:subheading]: Consider this subheading
     """)
@@ -353,8 +343,7 @@ def test_note_refs_in_lists():
     plugin = EditorNotesPlugin()
     plugin.load_config(dict(show_markers=True))
 
-    # Add notes to manager
-    plugin.note_manager.add(
+    for note in [
         EditorNote(
             note_type="todo",
             label="fixit",
@@ -362,9 +351,7 @@ def test_note_refs_in_lists():
             source_page=Path("test.md"),
             source_url="",
             line_number=1,
-        )
-    )
-    plugin.note_manager.add(
+        ),
         EditorNote(
             note_type="bug",
             label="issue",
@@ -372,28 +359,28 @@ def test_note_refs_in_lists():
             source_page=Path("test.md"),
             source_url="",
             line_number=2,
-        )
-    )
+        ),
+    ]:
+        plugin.note_manager.add(note)
 
     markdown = snick.dedent(
         """
         # Test Lists
-        
+
         Unordered list:
-        
+
         - Item one
         - Item two[^todo:fixit]
         - Item three
-        
+
         Ordered list:
-        
+
         1. First
         2. Second[^bug:issue]
         3. Third
         """
     )
 
-    # Mock page
     mock_page = Mock()
     mock_page.file = Mock()
     mock_page.file.src_uri = "test.md"

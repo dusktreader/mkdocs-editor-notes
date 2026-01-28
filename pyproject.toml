@@ -40,6 +40,7 @@ dev = [
     "pytest-pretty~=1.2",
     "pytest-random-order~=1.1",
     "ruff~=0.11",
+    "types-markdown>=3.10.0.20251106",
     "typos~=1.31",
 ]
 

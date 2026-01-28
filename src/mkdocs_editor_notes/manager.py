@@ -2,6 +2,7 @@ from collections.abc import Callable, Generator
 from enum import StrEnum, auto
 from pathlib import Path
 import re
+from typing import Any, assert_never
 
 from markdown import Markdown
 import snick
@@ -13,6 +14,8 @@ from mkdocs_editor_notes.constants import NOTE_DEF_PATTERN, NOTE_REF_PATTERN, CO
 from mkdocs_editor_notes.note import EditorNote
 
 log = get_plugin_logger(__name__)
+
+MdxConfigs = dict[str, dict[str, Any]]
 
 
 class LineType(StrEnum):
@@ -164,8 +167,7 @@ class EditorNotesManager:
             case LineType.REGULAR:
                 return EditorNotesManager.insert_anchor_at_beginning(line, anchor_span)
             case _:
-                # Fallback (should never reach here)
-                return EditorNotesManager.insert_anchor_at_beginning(line, anchor_span)
+                assert_never(line_type)
 
     @property
     def empty(self) -> bool:
@@ -407,7 +409,7 @@ class EditorNotesManager:
         return str(md_parts)
 
     def regenerate_aggregator_content(
-        self, emoji_getter: Callable[[str], str], markdown_extensions: list[str], mdx_configs: dict | None
+        self, emoji_getter: Callable[[str], str], markdown_extensions: list[str], mdx_configs: MdxConfigs
     ) -> None:
         """
         Regenerate the aggregator page content after all pages are processed.

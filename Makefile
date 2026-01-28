@@ -1,4 +1,4 @@
-PACKAGE_TARGET:=src/dummy_module
+PACKAGE_TARGET:=src/mkdocs_editor_notes
 
 default: help
 

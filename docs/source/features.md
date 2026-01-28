@@ -12,9 +12,7 @@ being optionally visible or hidden in the source pages themselves.
 
 ## Note Types
 
-The plugin supports four fixed note types with default emojis:[^bug:emoji-rendering]
-
-[^bug:emoji-rendering]: Test emoji rendering across different browsers
+The plugin supports four fixed note types with default emojis:
 
 - **✅ todo**: Tasks that need to be completed
 - **💭 ponder**: Questions or considerations
@@ -59,9 +57,7 @@ Both `bug` and `question` are automatically recognized as custom types and will 
 
 ## Labeled Notes
 
-Notes can have optional labels for better organization:[^ponder:label-format]
-
-[^ponder:label-format]: Should labels support different formats or special characters?
+Notes can have optional labels for better organization:
 
 ```markdown
 This paragraph has a labeled note.[^todo:fix-typo]
@@ -88,9 +84,7 @@ your browser.
 ## Paragraph Highlighting
 
 When clicking a link from the aggregator page to a source paragraph, the paragraph is automatically highlighted using
-CSS `:target` pseudo-class.[^improve:highlight-style]
-
-[^improve:highlight-style]: Make highlighting style configurable via CSS variables
+CSS `:target` pseudo-class.
 
 The highlight fades out after a few seconds for a better user experience.
 

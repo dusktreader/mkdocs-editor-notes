@@ -6,10 +6,8 @@ _Provides a page of editor's notes gathered from annotated document files._
 ## Overview
 
 mkdocs-editor-notes is a plugin that allows you to embed editorial notes directly in your markdown documentation
-files.[^todo:update-readme] These notes can be used to track todos, questions, improvements, and research items
-without cluttering the main documentation.
-
-[^todo:update-readme]: Update the main README.md with examples
+files. These notes can be used to track todos, questions, improvements, and research items without cluttering
+the main documentation.
 
 All notes are automatically collected and displayed on a dedicated aggregator page, making it easy to see all
 editorial work at a glance.

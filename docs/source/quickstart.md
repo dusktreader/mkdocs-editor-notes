@@ -23,9 +23,7 @@ pip install mkdocs-editor-notes
 
 ### Basic Setup
 
-Add the plugin to your `mkdocs.yml` configuration:[^todo:verify-config]
-
-[^todo:verify-config]: Make sure the configuration example is complete
+Add the plugin to your `mkdocs.yml` configuration:
 
 ```yaml
 plugins:
@@ -35,19 +33,16 @@ plugins:
 
 ### Adding Editor Notes
 
-Editor notes use a syntax similar to footnotes.[^ponder:syntax-alternative] You can add different types of notes.
+Editor notes use a syntax similar to footnotes. You can add different types of notes.
 
 **Note:** Labels (like `:expand-docs` or `:scalability`) are optional. You can use unlabeled notes or add specific
 labels for better organization.
 
-[^ponder:syntax-alternative]: Should we support alternative syntax formats?
-
 
 #### Todo Notes
 
-Use todo notes to mark tasks that need to be completed:[^improve:better-examples]
+Use todo notes to mark tasks that need to be completed:
 
-[^improve:better-examples]: Add more diverse examples
 
 ```markdown
 This feature needs more documentation.[^todo:expand-docs]
@@ -82,9 +77,8 @@ The error handling here is basic.[^improve:error-handling]
 
 #### Research Notes
 
-Mark items that need research:[^research:alternatives]
+Mark items that need research:
 
-[^research:alternatives]: Look into other mkdocs plugins for similar functionality
 
 ```markdown
 We could use a different markdown parser.[^research:parser-options]
@@ -95,9 +89,8 @@ We could use a different markdown parser.[^research:parser-options]
 
 #### Custom Note Types
 
-You can use any note type you want - they're automatically discovered:[^question:custom-examples]
+You can use any note type you want - they're automatically discovered:
 
-[^question:custom-examples]: Should we add more custom type examples?
 
 ```markdown
 This might be a bug.[^bug:rendering-issue]

@@ -6,14 +6,11 @@ theme:
   name: material
   features:
     - navigation.expand
-    - content.code.copy
-  font:
-    code: Fira Code
-  features:
-    - navigation.expand
     - navigation.footer
     - navigation.tracking
     - content.code.copy
+  font:
+    code: Fira Code
   icon:
     repo: fontawesome/brands/github
   palette:
@@ -27,14 +24,26 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to light mode
+
+
 watch:
+  - source
   - ../src/mkdocs_editor_notes
+
+
 nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Features: features.md
   - Reference: reference.md
+  - Editor Notes: editor-notes.md
 plugins:
+  editor-notes:
+    show_markers: true
+    note_type_emojis:
+      question: "❓"
+      bug: "🐛"
+      improve: "💡"  # Override default
   search:
     lang: en
   mkdocstrings:
@@ -60,3 +69,4 @@ markdown_extensions:
   - pymdownx.details:
   - admonition:
   - attr_list:
+  - md_in_html:

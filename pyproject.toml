@@ -3,63 +3,74 @@ name = "mkdocs-editor-notes"
 version = "0.1.0"
 description = "Provides a page of editor's notes gathered from annotated document files."
 authors = [
-    {name = "Tucker Beck", email ="tucker.beck@gmail.com"},
+  {name = "Tucker Beck", email = "tucker.beck@gmail.com"}
 ]
 readme = "README.md"
+license = {text = "MIT"}
 license-files = ["LICENSE.md"]
-
+keywords = ["mkdocs", "plugin", "documentation", "editor-notes", "annotations"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Framework :: MkDocs",
+  "Topic :: Documentation"
+]
 requires-python = ">=3.12, ~=3.14"
-dependencies = []
+dependencies = [
+  "mkdocs>=1.5.0",
+  "markdown>=3.4.0",
+  "snick>=3.0.0"
+]
 
+[project.entry-points."mkdocs.plugins"]
+editor-notes = "mkdocs_editor_notes.plugin:EditorNotesPlugin"
 
 [project.urls]
 homepage = "https://github.com/dusktreader/mkdocs-editor-notes"
+documentation = "https://dusktreader.github.io/mkdocs-editor-notes/"
 source = "https://github.com/dusktreader/mkdocs-editor-notes"
 changelog = "https://github.com/dusktreader/mkdocs-editor-notes/blob/main/CHANGELOG.md"
-
-
-[dependency-groups]
-dev = [
-    "basedpyright~=1.28",
-    "ipython~=8.18",
-    "mkdocs-material~=9.6",
-    "mkdocstrings[python]~=0.29",
-    "mypy~=1.15",
-    "pyclean~=3.1",
-    "pygments~=2.19",
-    "pytest~=8.3",
-    "pytest-cov~=6.0",
-    "pytest-pretty~=1.2",
-    "pytest-random-order~=1.1",
-    "ruff~=0.11",
-    "typos~=1.31",
-]
-
+issues = "https://github.com/dusktreader/mkdocs-editor-notes/issues"
 
 [tool.uv]
 package = true
 
-
-[tool.pytest.ini_options]
-addopts = [
-    "--random-order",
-    "--cov=src/mkdocs_editor_notes",
-    "--cov-report=term-missing",
-    "--cov-fail-under=85",
-    "--cov-report=xml:.coverage.xml",
-    "--junitxml=.junit.xml",
-    "--override-ini=junit_family=legacy",
+[dependency-groups]
+dev = [
+  "basedpyright~=1.28",
+  "ipython~=8.18",
+  "mkdocs-material~=9.6",
+  "mkdocstrings[python]~=0.29",
+  "mypy~=1.15",
+  "pre-commit>=4.5.1",
+  "pyclean~=3.1",
+  "pygments~=2.19",
+  "pytest~=8.3",
+  "pytest-cov~=6.0",
+  "pytest-pretty~=1.2",
+  "pytest-random-order~=1.1",
+  "ruff~=0.11",
+  "types-markdown>=3.10.0.20251106",
+  "typos~=1.31",
+  "yamllint>=1.38.0"
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.ruff]
-line-length = 120
-src = ["src/mkdocs_editor_notes", "tests"]
+[tool.basedpyright]
+reportAny = false
+reportExplicitAny = false
+reportUnusedCallResult = false
 
-
-[tool.ruff.format]
-docstring-code-format = true
-
+[tool.hatch.build.targets.wheel]
+packages = ["src/mkdocs_editor_notes"]
 
 [tool.mypy]
 pretty = true
@@ -70,21 +81,23 @@ check_untyped_defs = true
 module = []
 ignore_missing_imports = true
 
+[tool.pytest.ini_options]
+addopts = [
+  "--random-order",
+  "--cov=src/mkdocs_editor_notes",
+  "--cov-report=term-missing",
+  "--cov-fail-under=90",
+  "--cov-report=xml:.coverage.xml",
+  "--junitxml=.junit.xml",
+  "--override-ini=junit_family=legacy"
+]
 
-[tool.basedpyright]
-reportAny = false
-reportExplicitAny = false
-reportUnusedCallResult = false
+[tool.ruff]
+line-length = 120
+src = ["src/mkdocs_editor_notes", "tests"]
 
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.typos.default]
 extend-ignore-identifiers-re = []
-
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/mkdocs_editor_notes"]
-
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"

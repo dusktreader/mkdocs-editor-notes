@@ -65,6 +65,27 @@ plugins:
 ```
 
 
+## Running the Example
+
+This repository includes a complete example MkDocs site in the `example/` directory that demonstrates the plugin's
+features. You can run it locally to see the plugin in action.
+
+### Build the example site:
+
+```bash
+make example/build
+```
+
+### Serve the example site locally:
+
+```bash
+make example/serve
+```
+
+The example site will be available at `http://localhost:10001`. Navigate to the `/editor-notes/` page to see all the
+collected editorial notes from the example documentation.
+
+
 ## Documentation
 
 The complete documentation can be found at the [mkdocs-editor-notes home

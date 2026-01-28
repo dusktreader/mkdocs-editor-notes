@@ -130,3 +130,48 @@ beyond its type.
 
 All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to
 `/editor-notes/` to view all notes grouped by type with links back to their source locations.
+
+
+## Running the Example
+
+This repository includes a complete example MkDocs site that demonstrates the plugin's features in action. The example
+site is a fictional "SpiceFlow API" documentation that showcases various types of editor notes throughout its pages.
+
+### Prerequisites
+
+Make sure you have the development dependencies installed:
+
+```bash
+uv sync
+```
+
+### Building the Example
+
+To build the example site:
+
+```bash
+make example/build
+```
+
+This will generate the static site in the `example/site/` directory.
+
+### Serving the Example
+
+To serve the example site locally with live reload:
+
+```bash
+make example/serve
+```
+
+The example site will be available at `http://localhost:10001`. Navigate through the documentation to see inline editor
+notes, then visit the `/editor-notes/` page to see all collected notes organized by type.
+
+### What to Look For
+
+The example demonstrates:
+
+- Different note types (todo, ponder, improve, research, and custom types like urgent and idea)
+- Labeled and unlabeled notes
+- Custom emoji configuration
+- The aggregator page with source links
+- Marker visibility in rendered pages

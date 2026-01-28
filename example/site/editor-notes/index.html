@@ -1,0 +1,2672 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Track and manage the flow of melange across Arrakis">
+      
+      
+      
+      
+        <link rel="prev" href="../deployment/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Editor Notes - SpiceFlow API</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <style>
+            /* CSS Custom Properties for theme integration */
+:root {
+    /* Tooltip colors - fallback to neutral dark/light */
+    --editor-note-tooltip-bg: var(--md-default-fg-color--light, #333);
+    --editor-note-tooltip-fg: var(--md-default-bg-color, white);
+
+    /* Highlight colors - fallback to soft yellow */
+    --editor-note-highlight-bg: var(--md-accent-fg-color--transparent, rgba(255, 253, 231, 0.5));
+    --editor-note-highlight-intense: var(--md-accent-fg-color, #ffeb3b);
+}
+
+/* Fast tooltip display */
+.editor-note-marker a {
+    position: relative;
+}
+.editor-note-marker a[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: var(--editor-note-tooltip-bg);
+    color: var(--editor-note-tooltip-fg);
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 1000;
+    margin-bottom: 4px;
+    transition: none;
+    animation: none;
+}
+/* Remove default tooltip */
+.editor-note-marker a[title] {
+    position: relative;
+}
+/* Highlight reference anchors when targeted (from aggregator links) */
+span[id^="ref-"]:target {
+    display: inline;
+}
+/* Highlight aggregator entries when targeted (from marker links) */
+span[id^="agg-"]:target {
+    animation: none;
+}
+.editor-note-highlight {
+    background-color: var(--editor-note-highlight-bg);
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+}
+.editor-note-highlight-fade {
+    background-color: transparent;
+    transition: background-color 2s ease-out;
+}
+@keyframes highlight-fade {
+    0% { background-color: var(--editor-note-highlight-intense); }
+    100% { background-color: transparent; }
+}
+
+            </style>
+
+            <script>
+            // Editor Notes Configuration
+            window.EDITOR_NOTES_CONFIG = {
+                highlightDuration: 3000,
+                highlightFadeDuration: 2000
+            };
+            </script>
+
+            <script>
+            function clearAllHighlights() {
+    document.querySelectorAll('.editor-note-highlight').forEach(el => {
+        el.classList.remove('editor-note-highlight');
+        el.classList.remove('editor-note-highlight-fade');
+    });
+}
+
+function highlightTarget() {
+    clearAllHighlights();
+
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const target = document.querySelector(hash);
+    if (!target) {
+        console.warn(`[editor-notes] Target element not found for hash: ${hash}`);
+        return;
+    }
+
+    let elementToHighlight = null;
+
+    const config = window.EDITOR_NOTES_CONFIG || {};
+    const HIGHLIGHT_DURATION = config.highlightDuration || 3000; // Stay at full color for 3 seconds
+    const FADE_DURATION = config.highlightFadeDuration || 2000; // Fade for 2 seconds
+
+    if (target.id.startsWith('ref-')) {
+        elementToHighlight = target.parentElement;
+    } else if (target.id.startsWith('agg-')) {
+        elementToHighlight = target.closest('.editor-note-entry');
+    } else {
+        console.warn(`[editor-notes] Unrecognized target ID format: ${target.id} (expected 'ref-*' or 'agg-*')`);
+    }
+
+    if (elementToHighlight) {
+        elementToHighlight.classList.add('editor-note-highlight');
+        setTimeout(() => {
+            elementToHighlight.classList.add('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION);
+        setTimeout(() => {
+            elementToHighlight.classList.remove('editor-note-highlight');
+            elementToHighlight.classList.remove('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION + FADE_DURATION);
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+window.addEventListener('load', highlightTarget);
+window.addEventListener('hashchange', highlightTarget);
+
+            </script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#editor-notes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SpiceFlow API" class="md-header__button md-logo" aria-label="SpiceFlow API" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SpiceFlow API
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Editor Notes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SpiceFlow API" class="md-nav__button md-logo" aria-label="SpiceFlow API" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SpiceFlow API
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/harvests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spice Harvests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/sandworms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandworm Tracking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/rate-limiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Editor Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="editor-notes">Editor Notes</h1>
+<p>This page aggregates all editor notes found throughout the documentation.</p>
+<h2 id="idea">💡 idea</h2>
+<div class="editor-note-entry">
+    <span id="agg-idea-sandworm-ml"></span>
+    <h4>
+        sandworm-ml (<a href="../#ref-idea-sandworm-ml">index.md:28</a>)
+    </h4>
+    <p>Train ML model on wormsign patterns for better predictions</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-storm-schedule-api"></span>
+    <h4>
+        storm-schedule-api (<a href="../#ref-idea-storm-schedule-api">index.md:66</a>)
+    </h4>
+    <p>Add Coriolis storm prediction API</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-chaos-testing"></span>
+    <h4>
+        chaos-testing (<a href="../deployment/#ref-idea-chaos-testing">deployment.md:17</a>)
+    </h4>
+    <p>Provide chaos testing scenarios</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-service-tagging"></span>
+    <h4>
+        service-tagging (<a href="../deployment/#ref-idea-service-tagging">deployment.md:30</a>)
+    </h4>
+    <p>Add service tagging to API keys</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-webhook-metrics"></span>
+    <h4>
+        webhook-metrics (<a href="../deployment/#ref-idea-webhook-metrics">deployment.md:104</a>)
+    </h4>
+    <p>Add detailed webhook performance metrics</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-circuit-breaker-sdk"></span>
+    <h4>
+        circuit-breaker-sdk (<a href="../deployment/#ref-idea-circuit-breaker-sdk">deployment.md:152</a>)
+    </h4>
+    <p>Build circuit breaker into SDK</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-ip-allowlist"></span>
+    <h4>
+        ip-allowlist (<a href="../deployment/#ref-idea-ip-allowlist">deployment.md:172</a>)
+    </h4>
+    <p>Add IP allowlist feature for webhooks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-redis-integration"></span>
+    <h4>
+        redis-integration (<a href="../deployment/#ref-idea-redis-integration">deployment.md:189</a>)
+    </h4>
+    <p>Provide Redis integration guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-house-isolation"></span>
+    <h4>
+        house-isolation (<a href="../api/authentication/#ref-idea-house-isolation">api/authentication.md:22</a>)
+    </h4>
+    <p>Implement House-based key isolation</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-auto-extraction-triggers"></span>
+    <h4>
+        auto-extraction-triggers (<a href="../api/harvests/#ref-idea-auto-extraction-triggers">api/harvests.md:14</a>)
+    </h4>
+    <p>Add configurable auto-extraction triggers</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-sandworm-field-guide"></span>
+    <h4>
+        sandworm-field-guide (<a href="../api/sandworms/#ref-idea-sandworm-field-guide">api/sandworms.md:11</a>)
+    </h4>
+    <p>Create illustrated sandworm field guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-worm-profiles"></span>
+    <h4>
+        worm-profiles (<a href="../api/sandworms/#ref-idea-worm-profiles">api/sandworms.md:60</a>)
+    </h4>
+    <p>Create personality profiles for frequently-sighted worms</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-smart-thumpers"></span>
+    <h4>
+        smart-thumpers (<a href="../api/sandworms/#ref-idea-smart-thumpers">api/sandworms.md:104</a>)
+    </h4>
+    <p>Develop AI-controlled thumpers that adapt to worm behavior</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-fremen-partnership"></span>
+    <h4>
+        fremen-partnership (<a href="../api/sandworms/#ref-idea-fremen-partnership">api/sandworms.md:160</a>)
+    </h4>
+    <p>Establish formal partnership with Fremen ecological teams</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-prescience-api"></span>
+    <h4>
+        prescience-api (<a href="../getting-started/installation/#ref-idea-prescience-api">getting-started/installation.md:47</a>)
+    </h4>
+    <p>Add prescience-based API prediction features</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-rhythm-detection-api"></span>
+    <h4>
+        rhythm-detection-api (<a href="../getting-started/installation/#ref-idea-rhythm-detection-api">getting-started/installation.md:87</a>)
+    </h4>
+    <p>Add API to detect rhythmic API call patterns that might attract attention</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-auto-extraction"></span>
+    <h4>
+        auto-extraction (<a href="../getting-started/quickstart/#ref-idea-auto-extraction">getting-started/quickstart.md:32</a>)
+    </h4>
+    <p>Add automatic carryall extraction when wormsign detected</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-water-debt-tracker"></span>
+    <h4>
+        water-debt-tracker (<a href="../getting-started/quickstart/#ref-idea-water-debt-tracker">getting-started/quickstart.md:58</a>)
+    </h4>
+    <p>Build water debt tracking dashboard</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-predictive-maintenance"></span>
+    <h4>
+        predictive-maintenance (<a href="../getting-started/quickstart/#ref-idea-predictive-maintenance">getting-started/quickstart.md:87</a>)
+    </h4>
+    <p>Use ML to predict harvester failures before they happen</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-rhythm-detector"></span>
+    <h4>
+        rhythm-detector (<a href="../getting-started/quickstart/#ref-idea-rhythm-detector">getting-started/quickstart.md:96</a>)
+    </h4>
+    <p>Add rhythmic pattern detection to SDK</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-rate-limit-dashboard"></span>
+    <h4>
+        rate-limit-dashboard (<a href="../guides/rate-limiting/#ref-idea-rate-limit-dashboard">guides/rate-limiting.md:27</a>)
+    </h4>
+    <p>Add rate limit dashboard to web UI</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-response-caching"></span>
+    <h4>
+        response-caching (<a href="../guides/rate-limiting/#ref-idea-response-caching">guides/rate-limiting.md:74</a>)
+    </h4>
+    <p>Add ETags for efficient caching</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-clock-skew"></span>
+    <h4>
+        clock-skew (<a href="../guides/rate-limiting/#ref-idea-clock-skew">guides/rate-limiting.md:122</a>)
+    </h4>
+    <p>Detect and handle clock skew issues</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-bidirectional-sync"></span>
+    <h4>
+        bidirectional-sync (<a href="../guides/webhooks/#ref-idea-bidirectional-sync">guides/webhooks.md:11</a>)
+    </h4>
+    <p>Support bidirectional sync with external tools</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-assignment-history"></span>
+    <h4>
+        assignment-history (<a href="../guides/webhooks/#ref-idea-assignment-history">guides/webhooks.md:27</a>)
+    </h4>
+    <p>Track assignment history in webhooks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-idempotency"></span>
+    <h4>
+        idempotency (<a href="../guides/webhooks/#ref-idea-idempotency">guides/webhooks.md:77</a>)
+    </h4>
+    <p>Add idempotency key support</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-retry-config"></span>
+    <h4>
+        retry-config (<a href="../guides/webhooks/#ref-idea-retry-config">guides/webhooks.md:115</a>)
+    </h4>
+    <p>Allow custom retry configuration</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-idea-webhook-cli"></span>
+    <h4>
+        webhook-cli (<a href="../guides/webhooks/#ref-idea-webhook-cli">guides/webhooks.md:137</a>)
+    </h4>
+    <p>Create CLI tool for local webhook testing</p>
+</div>
+
+<h2 id="improve">🛠️ improve</h2>
+<div class="editor-note-entry">
+    <span id="agg-improve-wormsign-detection"></span>
+    <h4>
+        wormsign-detection (<a href="../#ref-improve-wormsign-detection">index.md:10</a>)
+    </h4>
+    <p>Improve thumper-based wormsign detection accuracy</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-warning-clarity"></span>
+    <h4>
+        warning-clarity (<a href="../#ref-improve-warning-clarity">index.md:58</a>)
+    </h4>
+    <p>Add examples of Imperial displeasure consequences</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-automated-checklist"></span>
+    <h4>
+        automated-checklist (<a href="../deployment/#ref-improve-automated-checklist">deployment.md:7</a>)
+    </h4>
+    <p>Create automated deployment checklist tool</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-architecture-benefits"></span>
+    <h4>
+        architecture-benefits (<a href="../deployment/#ref-improve-architecture-benefits">deployment.md:27</a>)
+    </h4>
+    <p>Expand architecture benefits section</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-env-management"></span>
+    <h4>
+        env-management (<a href="../deployment/#ref-improve-env-management">deployment.md:47</a>)
+    </h4>
+    <p>Document environment management best practices</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-docker-examples"></span>
+    <h4>
+        docker-examples (<a href="../deployment/#ref-improve-docker-examples">deployment.md:67</a>)
+    </h4>
+    <p>Add multi-stage build examples</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-logging-standards"></span>
+    <h4>
+        logging-standards (<a href="../deployment/#ref-improve-logging-standards">deployment.md:91</a>)
+    </h4>
+    <p>Define logging standards and formats</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-pooling-guide"></span>
+    <h4>
+        pooling-guide (<a href="../deployment/#ref-improve-pooling-guide">deployment.md:118</a>)
+    </h4>
+    <p>Add connection pooling best practices</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-ha-guide"></span>
+    <h4>
+        ha-guide (<a href="../deployment/#ref-improve-ha-guide">deployment.md:140</a>)
+    </h4>
+    <p>Write comprehensive HA guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-network-guide"></span>
+    <h4>
+        network-guide (<a href="../deployment/#ref-improve-network-guide">deployment.md:169</a>)
+    </h4>
+    <p>Add network security best practices</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-timeout-guide"></span>
+    <h4>
+        timeout-guide (<a href="../deployment/#ref-improve-timeout-guide">deployment.md:194</a>)
+    </h4>
+    <p>Add comprehensive timeout troubleshooting</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-imperial-compliance"></span>
+    <h4>
+        imperial-compliance (<a href="../api/authentication/#ref-improve-imperial-compliance">api/authentication.md:7</a>)
+    </h4>
+    <p>Ensure compliance with Imperial decree 10191-A</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-bulk-deployment"></span>
+    <h4>
+        bulk-deployment (<a href="../api/harvests/#ref-improve-bulk-deployment">api/harvests.md:9</a>)
+    </h4>
+    <p>Add bulk deployment for coordinated multi-harvester operations</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-wormsign-predictions"></span>
+    <h4>
+        wormsign-predictions (<a href="../api/harvests/#ref-improve-wormsign-predictions">api/harvests.md:29</a>)
+    </h4>
+    <p>Add ML-based wormsign prediction</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-eta-accuracy"></span>
+    <h4>
+        eta-accuracy (<a href="../api/harvests/#ref-improve-eta-accuracy">api/harvests.md:0</a>)
+    </h4>
+    <p>Improve ETA during storms</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-ring-counting"></span>
+    <h4>
+        ring-counting (<a href="../api/sandworms/#ref-improve-ring-counting">api/sandworms.md:29</a>)
+    </h4>
+    <p>Use computer vision to count rings accurately</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-verification-system"></span>
+    <h4>
+        verification-system (<a href="../api/sandworms/#ref-improve-verification-system">api/sandworms.md:46</a>)
+    </h4>
+    <p>Build Fremen verification API integration</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-bounty-structure"></span>
+    <h4>
+        bounty-structure (<a href="../api/sandworms/#ref-improve-bounty-structure">api/sandworms.md:92</a>)
+    </h4>
+    <p>Adjust bounty based on sighting quality and rarity</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-alert-system"></span>
+    <h4>
+        alert-system (<a href="../api/sandworms/#ref-improve-alert-system">api/sandworms.md:128</a>)
+    </h4>
+    <p>Build real-time push notification system</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-fremen-culture-docs"></span>
+    <h4>
+        fremen-culture-docs (<a href="../api/sandworms/#ref-improve-fremen-culture-docs">api/sandworms.md:155</a>)
+    </h4>
+    <p>Add Fremen cultural sensitivity training</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-fremen-package-manager"></span>
+    <h4>
+        fremen-package-manager (<a href="../getting-started/installation/#ref-improve-fremen-package-manager">getting-started/installation.md:17</a>)
+    </h4>
+    <p>Consider supporting Fremen stillsuit-based package delivery</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-choam-oauth"></span>
+    <h4>
+        choam-oauth (<a href="../getting-started/installation/#ref-improve-choam-oauth">getting-started/installation.md:58</a>)
+    </h4>
+    <p>Add CHOAM OAuth integration for automated credential refresh</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-survival-guide"></span>
+    <h4>
+        survival-guide (<a href="../getting-started/installation/#ref-improve-survival-guide">getting-started/installation.md:83</a>)
+    </h4>
+    <p>Expand into full desert survival guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-guild-navigator-auth"></span>
+    <h4>
+        guild-navigator-auth (<a href="../getting-started/quickstart/#ref-improve-guild-navigator-auth">getting-started/quickstart.md:16</a>)
+    </h4>
+    <p>Add Guild Navigator enhanced authentication</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-realtime-wormsign"></span>
+    <h4>
+        realtime-wormsign (<a href="../getting-started/quickstart/#ref-improve-realtime-wormsign">getting-started/quickstart.md:28</a>)
+    </h4>
+    <p>Add real-time WebSocket wormsign notifications</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-error-messages"></span>
+    <h4>
+        error-messages (<a href="../getting-started/quickstart/#ref-improve-error-messages">getting-started/quickstart.md:62</a>)
+    </h4>
+    <p>Make error messages more actionable during sandworm attacks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-tier-comparison"></span>
+    <h4>
+        tier-comparison (<a href="../guides/rate-limiting/#ref-improve-tier-comparison">guides/rate-limiting.md:9</a>)
+    </h4>
+    <p>Add visual comparison of tiers</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-burst-explanation"></span>
+    <h4>
+        burst-explanation (<a href="../guides/rate-limiting/#ref-improve-burst-explanation">guides/rate-limiting.md:21</a>)
+    </h4>
+    <p>Add detailed burst limit explanation with examples</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-error-response"></span>
+    <h4>
+        error-response (<a href="../guides/rate-limiting/#ref-improve-error-response">guides/rate-limiting.md:40</a>)
+    </h4>
+    <p>Make rate limit errors more actionable</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-js-example"></span>
+    <h4>
+        js-example (<a href="../guides/rate-limiting/#ref-improve-js-example">guides/rate-limiting.md:56</a>)
+    </h4>
+    <p>Add async/await patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-distribution-guide"></span>
+    <h4>
+        distribution-guide (<a href="../guides/rate-limiting/#ref-improve-distribution-guide">guides/rate-limiting.md:92</a>)
+    </h4>
+    <p>Add guide for request distribution patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-endpoint-limits"></span>
+    <h4>
+        endpoint-limits (<a href="../guides/rate-limiting/#ref-improve-endpoint-limits">guides/rate-limiting.md:106</a>)
+    </h4>
+    <p>Document per-endpoint rate limits</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-upgrade-cta"></span>
+    <h4>
+        upgrade-cta (<a href="../guides/rate-limiting/#ref-improve-upgrade-cta">guides/rate-limiting.md:114</a>)
+    </h4>
+    <p>Make upgrade path clearer</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-deletion-metadata"></span>
+    <h4>
+        deletion-metadata (<a href="../guides/webhooks/#ref-improve-deletion-metadata">guides/webhooks.md:25</a>)
+    </h4>
+    <p>Include more context about deleted tasks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-endpoint-requirements"></span>
+    <h4>
+        endpoint-requirements (<a href="../guides/webhooks/#ref-improve-endpoint-requirements">guides/webhooks.md:35</a>)
+    </h4>
+    <p>Provide reference implementation</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-webhook-config"></span>
+    <h4>
+        webhook-config (<a href="../guides/webhooks/#ref-improve-webhook-config">guides/webhooks.md:51</a>)
+    </h4>
+    <p>Add more configuration options</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-header-docs"></span>
+    <h4>
+        header-docs (<a href="../guides/webhooks/#ref-improve-header-docs">guides/webhooks.md:69</a>)
+    </h4>
+    <p>Document all webhook headers</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-timing-attack"></span>
+    <h4>
+        timing-attack (<a href="../guides/webhooks/#ref-improve-timing-attack">guides/webhooks.md:87</a>)
+    </h4>
+    <p>Use constant-time comparison to prevent timing attacks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-retry-docs"></span>
+    <h4>
+        retry-docs (<a href="../guides/webhooks/#ref-improve-retry-docs">guides/webhooks.md:105</a>)
+    </h4>
+    <p>Add detailed retry policy documentation</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-test-events"></span>
+    <h4>
+        test-events (<a href="../guides/webhooks/#ref-improve-test-events">guides/webhooks.md:127</a>)
+    </h4>
+    <p>Support sending test events for all event types</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-improve-deduplication-guide"></span>
+    <h4>
+        deduplication-guide (<a href="../guides/webhooks/#ref-improve-deduplication-guide">guides/webhooks.md:154</a>)
+    </h4>
+    <p>Write detailed deduplication guide</p>
+</div>
+
+<h2 id="ponder">⏳ ponder</h2>
+<div class="editor-note-entry">
+    <span id="agg-ponder-mention-bene-gesserit"></span>
+    <h4>
+        mention-bene-gesserit (<a href="../#ref-ponder-mention-bene-gesserit">index.md:7</a>)
+    </h4>
+    <p>Should we mention Bene Gesserit monitoring capabilities?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-fremen-features"></span>
+    <h4>
+        fremen-features (<a href="../#ref-ponder-fremen-features">index.md:34</a>)
+    </h4>
+    <p>Are we comfortable advertising Fremen tracking to Great Houses?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-fremen-terminology"></span>
+    <h4>
+        fremen-terminology (<a href="../#ref-ponder-fremen-terminology">index.md:70</a>)
+    </h4>
+    <p>Should we use more Fremen terminology in marketing?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-architecture-guide"></span>
+    <h4>
+        architecture-guide (<a href="../deployment/#ref-ponder-architecture-guide">deployment.md:21</a>)
+    </h4>
+    <p>Should we provide reference architectures?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-k8s-config"></span>
+    <h4>
+        k8s-config (<a href="../deployment/#ref-ponder-k8s-config">deployment.md:83</a>)
+    </h4>
+    <p>Is this Kubernetes config production-ready?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-caching-strategy"></span>
+    <h4>
+        caching-strategy (<a href="../deployment/#ref-ponder-caching-strategy">deployment.md:124</a>)
+    </h4>
+    <p>What caching strategies should we recommend?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-capacity-planning"></span>
+    <h4>
+        capacity-planning (<a href="../deployment/#ref-ponder-capacity-planning">deployment.md:178</a>)
+    </h4>
+    <p>Create capacity planning calculator</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-years-calculation"></span>
+    <h4>
+        years-calculation (<a href="../api/sandworms/#ref-ponder-years-calculation">api/sandworms.md:5</a>)
+    </h4>
+    <p>Is this accurate under the Harkonnen administration?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-maker-ethics"></span>
+    <h4>
+        maker-ethics (<a href="../api/sandworms/#ref-ponder-maker-ethics">api/sandworms.md:30</a>)
+    </h4>
+    <p>Ethics of tracking Fremen-ridden sandworms?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-maker-hook-ethics"></span>
+    <h4>
+        maker-hook-ethics (<a href="../api/sandworms/#ref-ponder-maker-hook-ethics">api/sandworms.md:118</a>)
+    </h4>
+    <p>Should we provide maker hook (worm-riding) data?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-api-spirituality"></span>
+    <h4>
+        api-spirituality (<a href="../api/sandworms/#ref-ponder-api-spirituality">api/sandworms.md:179</a>)
+    </h4>
+    <p>Should we include more Fremen spiritual context?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-water-requirements"></span>
+    <h4>
+        water-requirements (<a href="../getting-started/installation/#ref-ponder-water-requirements">getting-started/installation.md:43</a>)
+    </h4>
+    <p>Is requiring 2.0 too restrictive for some sietches?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-water-code-metaphor"></span>
+    <h4>
+        water-code-metaphor (<a href="../getting-started/installation/#ref-ponder-water-code-metaphor">getting-started/installation.md:90</a>)
+    </h4>
+    <p>Is this water/memory metaphor too much?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-realistic-harvest-time"></span>
+    <h4>
+        realistic-harvest-time (<a href="../getting-started/quickstart/#ref-ponder-realistic-harvest-time">getting-started/quickstart.md:3</a>)
+    </h4>
+    <p>Real harvests take hours - is 5 minutes misleading?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-shai-hulud-definition"></span>
+    <h4>
+        shai-hulud-definition (<a href="../getting-started/quickstart/#ref-ponder-shai-hulud-definition">getting-started/quickstart.md:50</a>)
+    </h4>
+    <p>Should we clarify that all sandworms are Shai-Hulud?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-desert-philosophy"></span>
+    <h4>
+        desert-philosophy (<a href="../getting-started/quickstart/#ref-ponder-desert-philosophy">getting-started/quickstart.md:76</a>)
+    </h4>
+    <p>Should we include more Fremen philosophy?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-rate-limit-philosophy"></span>
+    <h4>
+        rate-limit-philosophy (<a href="../guides/rate-limiting/#ref-ponder-rate-limit-philosophy">guides/rate-limiting.md:7</a>)
+    </h4>
+    <p>Should we explain why rate limits exist?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-backoff-algorithm"></span>
+    <h4>
+        backoff-algorithm (<a href="../guides/rate-limiting/#ref-ponder-backoff-algorithm">guides/rate-limiting.md:68</a>)
+    </h4>
+    <p>Should we provide a recommended backoff algorithm?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-exemptions"></span>
+    <h4>
+        exemptions (<a href="../guides/rate-limiting/#ref-ponder-exemptions">guides/rate-limiting.md:104</a>)
+    </h4>
+    <p>Should we offer rate limit exemptions?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-usage-patterns"></span>
+    <h4>
+        usage-patterns (<a href="../guides/rate-limiting/#ref-ponder-usage-patterns">guides/rate-limiting.md:134</a>)
+    </h4>
+    <p>Analyze common usage patterns causing issues</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-webhook-intro"></span>
+    <h4>
+        webhook-intro (<a href="../guides/webhooks/#ref-ponder-webhook-intro">guides/webhooks.md:7</a>)
+    </h4>
+    <p>Is this explanation clear for beginners?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-payload-structure"></span>
+    <h4>
+        payload-structure (<a href="../guides/webhooks/#ref-ponder-payload-structure">guides/webhooks.md:65</a>)
+    </h4>
+    <p>Should we use a different payload format?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-retry-schedule"></span>
+    <h4>
+        retry-schedule (<a href="../guides/webhooks/#ref-ponder-retry-schedule">guides/webhooks.md:112</a>)
+    </h4>
+    <p>Is this retry schedule optimal?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-ponder-async-processing"></span>
+    <h4>
+        async-processing (<a href="../guides/webhooks/#ref-ponder-async-processing">guides/webhooks.md:160</a>)
+    </h4>
+    <p>Recommend async processing patterns</p>
+</div>
+
+<h2 id="question">❗ question</h2>
+<div class="editor-note-entry">
+    <span id="agg-question-fremen-integration"></span>
+    <h4>
+        fremen-integration (<a href="../#ref-question-fremen-integration">index.md:18</a>)
+    </h4>
+    <p>Should we add Fremen sietch integration?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-email-on-arrakis"></span>
+    <h4>
+        email-on-arrakis (<a href="../#ref-question-email-on-arrakis">index.md:65</a>)
+    </h4>
+    <p>Do we have reliable email infrastructure on Arrakis?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-retry-defaults"></span>
+    <h4>
+        retry-defaults (<a href="../deployment/#ref-question-retry-defaults">deployment.md:13</a>)
+    </h4>
+    <p>What should default retry settings be?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-secrets-recommendations"></span>
+    <h4>
+        secrets-recommendations (<a href="../deployment/#ref-question-secrets-recommendations">deployment.md:55</a>)
+    </h4>
+    <p>Should we recommend specific tools?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-replica-count"></span>
+    <h4>
+        replica-count (<a href="../deployment/#ref-question-replica-count">deployment.md:85</a>)
+    </h4>
+    <p>What's the recommended replica count?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-query-param-security"></span>
+    <h4>
+        query-param-security (<a href="../deployment/#ref-question-query-param-security">deployment.md:164</a>)
+    </h4>
+    <p>Should we block query param auth entirely?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-remote-registration"></span>
+    <h4>
+        remote-registration (<a href="../api/authentication/#ref-question-remote-registration">api/authentication.md:11</a>)
+    </h4>
+    <p>Can minor houses register remotely?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-mid-harvest-updates"></span>
+    <h4>
+        mid-harvest-updates (<a href="../api/harvests/#ref-question-mid-harvest-updates">api/harvests.md:12</a>)
+    </h4>
+    <p>What parameters can safely be changed mid-harvest?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-coordinate-system"></span>
+    <h4>
+        coordinate-system (<a href="../api/harvests/#ref-question-coordinate-system">api/harvests.md:23</a>)
+    </h4>
+    <p>Should we support Fremen desert navigation?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-extraction-sla"></span>
+    <h4>
+        extraction-sla (<a href="../api/harvests/#ref-question-extraction-sla">api/harvests.md:43</a>)
+    </h4>
+    <p>What's our carryall response time SLA?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-largest-recorded"></span>
+    <h4>
+        largest-recorded (<a href="../api/sandworms/#ref-question-largest-recorded">api/sandworms.md:13</a>)
+    </h4>
+    <p>What's the largest sandworm ever recorded?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-worm-tagging"></span>
+    <h4>
+        worm-tagging (<a href="../api/sandworms/#ref-question-worm-tagging">api/sandworms.md:25</a>)
+    </h4>
+    <p>Can we actually tag sandworms for tracking?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-size-filter"></span>
+    <h4>
+        size-filter (<a href="../api/sandworms/#ref-question-size-filter">api/sandworms.md:43</a>)
+    </h4>
+    <p>Should we support max_size parameter too?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-crowdsourced-data"></span>
+    <h4>
+        crowdsourced-data (<a href="../api/sandworms/#ref-question-crowdsourced-data">api/sandworms.md:78</a>)
+    </h4>
+    <p>Should we accept wormsign reports from independent harvesters?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-cultural-appropriation"></span>
+    <h4>
+        cultural-appropriation (<a href="../api/sandworms/#ref-question-cultural-appropriation">api/sandworms.md:126</a>)
+    </h4>
+    <p>Is offering this API cultural appropriation?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-stealth-worms"></span>
+    <h4>
+        stealth-worms (<a href="../api/sandworms/#ref-question-stealth-worms">api/sandworms.md:168</a>)
+    </h4>
+    <p>Do some worms actively avoid detection?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-python-imperial-calendar"></span>
+    <h4>
+        python-imperial-calendar (<a href="../getting-started/installation/#ref-question-python-imperial-calendar">getting-started/installation.md:9</a>)
+    </h4>
+    <p>How do we map Python versions to Imperial calendar years?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-navigator-certs"></span>
+    <h4>
+        navigator-certs (<a href="../getting-started/installation/#ref-question-navigator-certs">getting-started/installation.md:53</a>)
+    </h4>
+    <p>Do we need to verify navigator credentials at install time?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-navigator-stillsuits"></span>
+    <h4>
+        navigator-stillsuits (<a href="../getting-started/installation/#ref-question-navigator-stillsuits">getting-started/installation.md:80</a>)
+    </h4>
+    <p>Do Guild Navigators even wear stillsuits in their tanks?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-bene-gesserit-privacy"></span>
+    <h4>
+        bene-gesserit-privacy (<a href="../getting-started/installation/#ref-question-bene-gesserit-privacy">getting-started/installation.md:96</a>)
+    </h4>
+    <p>How do we handle Bene Gesserit data requests?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-prerequisite-sandworm-training"></span>
+    <h4>
+        prerequisite-sandworm-training (<a href="../getting-started/quickstart/#ref-question-prerequisite-sandworm-training">getting-started/quickstart.md:11</a>)
+    </h4>
+    <p>Should we require sandworm safety certification?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-webhook-latency"></span>
+    <h4>
+        webhook-latency (<a href="../getting-started/quickstart/#ref-question-webhook-latency">getting-started/quickstart.md:72</a>)
+    </h4>
+    <p>Can webhooks outrun a sandworm?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-burst-limits"></span>
+    <h4>
+        burst-limits (<a href="../guides/rate-limiting/#ref-question-burst-limits">guides/rate-limiting.md:15</a>)
+    </h4>
+    <p>Are burst limits high enough?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-negative-remaining"></span>
+    <h4>
+        negative-remaining (<a href="../guides/rate-limiting/#ref-question-negative-remaining">guides/rate-limiting.md:34</a>)
+    </h4>
+    <p>Can remaining go negative with burst?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-usage-dashboard"></span>
+    <h4>
+        usage-dashboard (<a href="../guides/rate-limiting/#ref-question-usage-dashboard">guides/rate-limiting.md:100</a>)
+    </h4>
+    <p>Should we build a usage dashboard?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-temp-increases"></span>
+    <h4>
+        temp-increases (<a href="../guides/rate-limiting/#ref-question-temp-increases">guides/rate-limiting.md:118</a>)
+    </h4>
+    <p>How should we handle temporary limit increase requests?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-observability"></span>
+    <h4>
+        observability (<a href="../guides/webhooks/#ref-question-observability">guides/webhooks.md:15</a>)
+    </h4>
+    <p>Should we integrate with observability platforms?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-timeout-value"></span>
+    <h4>
+        timeout-value (<a href="../guides/webhooks/#ref-question-timeout-value">guides/webhooks.md:38</a>)
+    </h4>
+    <p>Is 5 seconds too short for some use cases?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-custom-headers"></span>
+    <h4>
+        custom-headers (<a href="../guides/webhooks/#ref-question-custom-headers">guides/webhooks.md:75</a>)
+    </h4>
+    <p>Should we support custom headers?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-ordering"></span>
+    <h4>
+        ordering (<a href="../guides/webhooks/#ref-question-ordering">guides/webhooks.md:102</a>)
+    </h4>
+    <p>Do users need ordered delivery?</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-question-payload-size"></span>
+    <h4>
+        payload-size (<a href="../guides/webhooks/#ref-question-payload-size">guides/webhooks.md:150</a>)
+    </h4>
+    <p>Is 10MB payload size reasonable?</p>
+</div>
+
+<h2 id="research">🔍 research</h2>
+<div class="editor-note-entry">
+    <span id="agg-research-guild-prescience-api"></span>
+    <h4>
+        guild-prescience-api (<a href="../#ref-research-guild-prescience-api">index.md:32</a>)
+    </h4>
+    <p>Research integration with Guild Navigator prescience calculations</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-monitoring-tools"></span>
+    <h4>
+        monitoring-tools (<a href="../deployment/#ref-research-monitoring-tools">deployment.md:11</a>)
+    </h4>
+    <p>Research popular monitoring tool integrations</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-event-patterns"></span>
+    <h4>
+        event-patterns (<a href="../deployment/#ref-research-event-patterns">deployment.md:33</a>)
+    </h4>
+    <p>Research event-driven architecture patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-k8s-patterns"></span>
+    <h4>
+        k8s-patterns (<a href="../deployment/#ref-research-k8s-patterns">deployment.md:77</a>)
+    </h4>
+    <p>Research Kubernetes deployment patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-error-tracking"></span>
+    <h4>
+        error-tracking (<a href="../deployment/#ref-research-error-tracking">deployment.md:110</a>)
+    </h4>
+    <p>Research error tracking tool integrations</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-degradation-patterns"></span>
+    <h4>
+        degradation-patterns (<a href="../deployment/#ref-research-degradation-patterns">deployment.md:146</a>)
+    </h4>
+    <p>Research graceful degradation patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-db-scaling"></span>
+    <h4>
+        db-scaling (<a href="../deployment/#ref-research-db-scaling">deployment.md:184</a>)
+    </h4>
+    <p>Research database scaling patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-ixian-tech"></span>
+    <h4>
+        ixian-tech (<a href="../api/authentication/#ref-research-ixian-tech">api/authentication.md:24</a>)
+    </h4>
+    <p>Evaluate Ixian security technology</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-grading-standards"></span>
+    <h4>
+        grading-standards (<a href="../api/harvests/#ref-research-grading-standards">api/harvests.md:28</a>)
+    </h4>
+    <p>Verify grading with CHOAM</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-sandworm-biology"></span>
+    <h4>
+        sandworm-biology (<a href="../api/sandworms/#ref-research-sandworm-biology">api/sandworms.md:9</a>)
+    </h4>
+    <p>Compile comprehensive sandworm biology documentation</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-aging-methods"></span>
+    <h4>
+        aging-methods (<a href="../api/sandworms/#ref-research-aging-methods">api/sandworms.md:27</a>)
+    </h4>
+    <p>Research Fremen sandworm aging techniques</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-prediction-accuracy"></span>
+    <h4>
+        prediction-accuracy (<a href="../api/sandworms/#ref-research-prediction-accuracy">api/sandworms.md:62</a>)
+    </h4>
+    <p>Audit prediction accuracy vs Fremen intuition</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-behavior-analysis"></span>
+    <h4>
+        behavior-analysis (<a href="../api/sandworms/#ref-research-behavior-analysis">api/sandworms.md:94</a>)
+    </h4>
+    <p>Partner with Fremen for behavioral research</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-historical-sightings"></span>
+    <h4>
+        historical-sightings (<a href="../api/sandworms/#ref-research-historical-sightings">api/sandworms.md:134</a>)
+    </h4>
+    <p>Digitize 80 years of Harkonnen harvesting records</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-fremen-vs-ai"></span>
+    <h4>
+        fremen-vs-ai (<a href="../api/sandworms/#ref-research-fremen-vs-ai">api/sandworms.md:166</a>)
+    </h4>
+    <p>Compare AI predictions vs Fremen accuracy rates</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-chakobsa-sdk"></span>
+    <h4>
+        chakobsa-sdk (<a href="../getting-started/installation/#ref-research-chakobsa-sdk">getting-started/installation.md:37</a>)
+    </h4>
+    <p>Research demand for native Chakobsa language SDK</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-stillsuit-standards"></span>
+    <h4>
+        stillsuit-standards (<a href="../getting-started/installation/#ref-research-stillsuit-standards">getting-started/installation.md:76</a>)
+    </h4>
+    <p>Verify compatibility with Fremen-made stillsuits</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-spice-computation"></span>
+    <h4>
+        spice-computation (<a href="../getting-started/installation/#ref-research-spice-computation">getting-started/installation.md:95</a>)
+    </h4>
+    <p>Research spice-induced computational anomalies</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-sandworm-territories"></span>
+    <h4>
+        sandworm-territories (<a href="../getting-started/quickstart/#ref-research-sandworm-territories">getting-started/quickstart.md:46</a>)
+    </h4>
+    <p>Research whether sandworms have territories</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-harvester-loss-stats"></span>
+    <h4>
+        harvester-loss-stats (<a href="../getting-started/quickstart/#ref-research-harvester-loss-stats">getting-started/quickstart.md:95</a>)
+    </h4>
+    <p>Compile last 10 years of harvester loss data</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-backoff-strategies"></span>
+    <h4>
+        backoff-strategies (<a href="../guides/rate-limiting/#ref-research-backoff-strategies">guides/rate-limiting.md:48</a>)
+    </h4>
+    <p>Research optimal backoff strategies</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-polling-patterns"></span>
+    <h4>
+        polling-patterns (<a href="../guides/rate-limiting/#ref-research-polling-patterns">guides/rate-limiting.md:80</a>)
+    </h4>
+    <p>Research common polling anti-patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-bulk-limits"></span>
+    <h4>
+        bulk-limits (<a href="../guides/rate-limiting/#ref-research-bulk-limits">guides/rate-limiting.md:110</a>)
+    </h4>
+    <p>Research appropriate bulk export limits</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-distributed-limits"></span>
+    <h4>
+        distributed-limits (<a href="../guides/rate-limiting/#ref-research-distributed-limits">guides/rate-limiting.md:128</a>)
+    </h4>
+    <p>Research distributed rate limiting edge cases</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-analytics-integrations"></span>
+    <h4>
+        analytics-integrations (<a href="../guides/webhooks/#ref-research-analytics-integrations">guides/webhooks.md:13</a>)
+    </h4>
+    <p>Research popular analytics platforms</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-workflow-webhooks"></span>
+    <h4>
+        workflow-webhooks (<a href="../guides/webhooks/#ref-research-workflow-webhooks">guides/webhooks.md:29</a>)
+    </h4>
+    <p>Determine what workflow data to include</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-delivery-guarantees"></span>
+    <h4>
+        delivery-guarantees (<a href="../guides/webhooks/#ref-research-delivery-guarantees">guides/webhooks.md:99</a>)
+    </h4>
+    <p>Research industry standard delivery guarantees</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-research-rate-limits"></span>
+    <h4>
+        rate-limits (<a href="../guides/webhooks/#ref-research-rate-limits">guides/webhooks.md:148</a>)
+    </h4>
+    <p>Research appropriate delivery rate limits</p>
+</div>
+
+<h2 id="todo">✅ todo</h2>
+<div class="editor-note-entry">
+    <span id="agg-todo-add-sandworm-hero"></span>
+    <h4>
+        add-sandworm-hero (<a href="../#ref-todo-add-sandworm-hero">index.md:3</a>)
+    </h4>
+    <p>Add dramatic sandworm hero image</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-imperial-calendar"></span>
+    <h4>
+        imperial-calendar (<a href="../#ref-todo-imperial-calendar">index.md:46</a>)
+    </h4>
+    <p>Add automatic Imperial calendar conversion</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-navigator-stability"></span>
+    <h4>
+        navigator-stability (<a href="../#ref-todo-navigator-stability">index.md:50</a>)
+    </h4>
+    <p>Stabilize Guild API once Navigator Edric completes testing</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-key-rotation"></span>
+    <h4>
+        key-rotation (<a href="../deployment/#ref-todo-key-rotation">deployment.md:9</a>)
+    </h4>
+    <p>Document key rotation procedures</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-pattern-examples"></span>
+    <h4>
+        pattern-examples (<a href="../deployment/#ref-todo-pattern-examples">deployment.md:39</a>)
+    </h4>
+    <p>Add complete pattern implementation examples</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-vault-example"></span>
+    <h4>
+        vault-example (<a href="../deployment/#ref-todo-vault-example">deployment.md:61</a>)
+    </h4>
+    <p>Add complete Vault integration example</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-docker-compose"></span>
+    <h4>
+        docker-compose (<a href="../deployment/#ref-todo-docker-compose">deployment.md:73</a>)
+    </h4>
+    <p>Add Docker Compose example</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-metrics-dashboard"></span>
+    <h4>
+        metrics-dashboard (<a href="../deployment/#ref-todo-metrics-dashboard">deployment.md:99</a>)
+    </h4>
+    <p>Build pre-configured metrics dashboard</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-perf-comparison"></span>
+    <h4>
+        perf-comparison (<a href="../deployment/#ref-todo-perf-comparison">deployment.md:136</a>)
+    </h4>
+    <p>Add performance comparison benchmarks</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-key-redaction"></span>
+    <h4>
+        key-redaction (<a href="../deployment/#ref-todo-key-redaction">deployment.md:162</a>)
+    </h4>
+    <p>Add automatic key redaction in logs</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-memory-profiling"></span>
+    <h4>
+        memory-profiling (<a href="../deployment/#ref-todo-memory-profiling">deployment.md:200</a>)
+    </h4>
+    <p>Add memory profiling guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-guild-auth"></span>
+    <h4>
+        guild-auth (<a href="../api/authentication/#ref-todo-guild-auth">api/authentication.md:3</a>)
+    </h4>
+    <p>Add Guild Navigator prescience-based authentication</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-add-openapi-spec"></span>
+    <h4>
+        add-openapi-spec (<a href="../api/harvests/#ref-todo-add-openapi-spec">api/harvests.md:3</a>)
+    </h4>
+    <p>Generate OpenAPI spec and submit to CHOAM for approval</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-crew-vitals"></span>
+    <h4>
+        crew-vitals (<a href="../api/harvests/#ref-todo-crew-vitals">api/harvests.md:26</a>)
+    </h4>
+    <p>Add real-time crew vital signs</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-sdk-examples-all"></span>
+    <h4>
+        sdk-examples-all (<a href="../api/harvests/#ref-todo-sdk-examples-all">api/harvests.md:39</a>)
+    </h4>
+    <p>Add examples for all languages (including Chakobsa)</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-attraction-research"></span>
+    <h4>
+        attraction-research (<a href="../api/sandworms/#ref-todo-attraction-research">api/sandworms.md:16</a>)
+    </h4>
+    <p>Document all known sandworm attraction patterns</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-radius-search"></span>
+    <h4>
+        radius-search (<a href="../api/sandworms/#ref-todo-radius-search">api/sandworms.md:40</a>)
+    </h4>
+    <p>Add polygon-based search for irregular regions</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-historical-filters"></span>
+    <h4>
+        historical-filters (<a href="../api/sandworms/#ref-todo-historical-filters">api/sandworms.md:144</a>)
+    </h4>
+    <p>Add more sophisticated historical query filters</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-sandtrout-tracking"></span>
+    <h4>
+        sandtrout-tracking (<a href="../api/sandworms/#ref-todo-sandtrout-tracking">api/sandworms.md:169</a>)
+    </h4>
+    <p>Add sandtrout life cycle tracking</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-guild-approved-languages"></span>
+    <h4>
+        guild-approved-languages (<a href="../getting-started/installation/#ref-todo-guild-approved-languages">getting-started/installation.md:3</a>)
+    </h4>
+    <p>Confirm which languages are Guild Navigator approved</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-wormsign-test"></span>
+    <h4>
+        wormsign-test (<a href="../getting-started/installation/#ref-todo-wormsign-test">getting-started/installation.md:68</a>)
+    </h4>
+    <p>Add realistic wormsign test data</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-create-sandworm-troubleshooting"></span>
+    <h4>
+        create-sandworm-troubleshooting (<a href="../getting-started/installation/#ref-todo-create-sandworm-troubleshooting">getting-started/installation.md:72</a>)
+    </h4>
+    <p>Create emergency sandworm troubleshooting guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-thumper-docs"></span>
+    <h4>
+        thumper-docs (<a href="../getting-started/quickstart/#ref-todo-thumper-docs">getting-started/quickstart.md:24</a>)
+    </h4>
+    <p>Document all thumper patterns and their sandworm attraction rates</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-api-completeness"></span>
+    <h4>
+        api-completeness (<a href="../getting-started/quickstart/#ref-todo-api-completeness">getting-started/quickstart.md:70</a>)
+    </h4>
+    <p>Add examples for Guild Navigator prescience integration</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-thumper-recommendations"></span>
+    <h4>
+        thumper-recommendations (<a href="../getting-started/quickstart/#ref-todo-thumper-recommendations">getting-started/quickstart.md:98</a>)
+    </h4>
+    <p>Create thumper placement optimization guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-rate-limit-calculator"></span>
+    <h4>
+        rate-limit-calculator (<a href="../guides/rate-limiting/#ref-todo-rate-limit-calculator">guides/rate-limiting.md:3</a>)
+    </h4>
+    <p>Build interactive rate limit calculator</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-test-key-limits"></span>
+    <h4>
+        test-key-limits (<a href="../guides/rate-limiting/#ref-todo-test-key-limits">guides/rate-limiting.md:18</a>)
+    </h4>
+    <p>Consider increasing test key limits</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-header-examples"></span>
+    <h4>
+        header-examples (<a href="../guides/rate-limiting/#ref-todo-header-examples">guides/rate-limiting.md:31</a>)
+    </h4>
+    <p>Show examples of reading headers in different languages</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-retry-libraries"></span>
+    <h4>
+        retry-libraries (<a href="../guides/rate-limiting/#ref-todo-retry-libraries">guides/rate-limiting.md:54</a>)
+    </h4>
+    <p>Document retry libraries for each language</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-usage-api"></span>
+    <h4>
+        usage-api (<a href="../guides/rate-limiting/#ref-todo-usage-api">guides/rate-limiting.md:98</a>)
+    </h4>
+    <p>Add API endpoint for rate limit usage stats</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-health-docs"></span>
+    <h4>
+        health-docs (<a href="../guides/rate-limiting/#ref-todo-health-docs">guides/rate-limiting.md:108</a>)
+    </h4>
+    <p>Document health check endpoint</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-coordination-guide"></span>
+    <h4>
+        coordination-guide (<a href="../guides/rate-limiting/#ref-todo-coordination-guide">guides/rate-limiting.md:132</a>)
+    </h4>
+    <p>Write guide for multi-service rate limit coordination</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-webhook-video"></span>
+    <h4>
+        webhook-video (<a href="../guides/webhooks/#ref-todo-webhook-video">guides/webhooks.md:3</a>)
+    </h4>
+    <p>Create video tutorial for webhook setup</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-payload-samples"></span>
+    <h4>
+        payload-samples (<a href="../guides/webhooks/#ref-todo-payload-samples">guides/webhooks.md:23</a>)
+    </h4>
+    <p>Add sample payload for each event type</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-more-examples"></span>
+    <h4>
+        more-examples (<a href="../guides/webhooks/#ref-todo-more-examples">guides/webhooks.md:45</a>)
+    </h4>
+    <p>Add examples for Node.js, Go, Ruby</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-sdk-webhook-methods"></span>
+    <h4>
+        sdk-webhook-methods (<a href="../guides/webhooks/#ref-todo-sdk-webhook-methods">guides/webhooks.md:59</a>)
+    </h4>
+    <p>Add webhook management to all SDKs</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-verify-examples-all"></span>
+    <h4>
+        verify-examples-all (<a href="../guides/webhooks/#ref-todo-verify-examples-all">guides/webhooks.md:93</a>)
+    </h4>
+    <p>Add verification examples for all languages</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-monitoring-dashboard"></span>
+    <h4>
+        monitoring-dashboard (<a href="../guides/webhooks/#ref-todo-monitoring-dashboard">guides/webhooks.md:117</a>)
+    </h4>
+    <p>Build webhook monitoring dashboard</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-todo-test-data-realism"></span>
+    <h4>
+        test-data-realism (<a href="../guides/webhooks/#ref-todo-test-data-realism">guides/webhooks.md:135</a>)
+    </h4>
+    <p>Use realistic test data in test webhooks</p>
+</div>
+
+<h2 id="urgent">🚨 urgent</h2>
+<div class="editor-note-entry">
+    <span id="agg-urgent-choam-compliance"></span>
+    <h4>
+        choam-compliance (<a href="../#ref-urgent-choam-compliance">index.md:12</a>)
+    </h4>
+    <p>Update API to meet new CHOAM Imperial reporting requirements</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-spice-quality-tracking"></span>
+    <h4>
+        spice-quality-tracking (<a href="../#ref-urgent-spice-quality-tracking">index.md:22</a>)
+    </h4>
+    <p>Add melange purity grading to harvest records</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-atreides-timeline"></span>
+    <h4>
+        atreides-timeline (<a href="../#ref-urgent-atreides-timeline">index.md:51</a>)
+    </h4>
+    <p>Verify API launch timeline with Duke Leto</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-deployment-review"></span>
+    <h4>
+        deployment-review (<a href="../deployment/#ref-urgent-deployment-review">deployment.md:3</a>)
+    </h4>
+    <p>Security review deployment guide before publishing</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-secrets-guide"></span>
+    <h4>
+        secrets-guide (<a href="../deployment/#ref-urgent-secrets-guide">deployment.md:53</a>)
+    </h4>
+    <p>Write comprehensive secrets management guide</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-metrics-integration"></span>
+    <h4>
+        metrics-integration (<a href="../deployment/#ref-urgent-metrics-integration">deployment.md:97</a>)
+    </h4>
+    <p>Add Prometheus/Grafana integration docs</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-async-sdk"></span>
+    <h4>
+        async-sdk (<a href="../deployment/#ref-urgent-async-sdk">deployment.md:130</a>)
+    </h4>
+    <p>Complete async SDK before v3.0 release</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-security-audit"></span>
+    <h4>
+        security-audit (<a href="../deployment/#ref-urgent-security-audit">deployment.md:160</a>)
+    </h4>
+    <p>Complete security audit before v2.0</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-delivery-time"></span>
+    <h4>
+        delivery-time (<a href="../api/authentication/#ref-urgent-delivery-time">api/authentication.md:14</a>)
+    </h4>
+    <p>Reduce delivery time from 3 days to 1 day</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-field-validation"></span>
+    <h4>
+        field-validation (<a href="../api/harvests/#ref-urgent-field-validation">api/harvests.md:20</a>)
+    </h4>
+    <p>Validate all fields match Imperial standards</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-safe-distance"></span>
+    <h4>
+        safe-distance (<a href="../api/harvests/#ref-urgent-safe-distance">api/harvests.md:24</a>)
+    </h4>
+    <p>Document minimum safe distance from sietches</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-fremen-approval"></span>
+    <h4>
+        fremen-approval (<a href="../api/sandworms/#ref-urgent-fremen-approval">api/sandworms.md:3</a>)
+    </h4>
+    <p>Get Fremen approval before releasing sandworm data publicly</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-sandworm-field-validation"></span>
+    <h4>
+        sandworm-field-validation (<a href="../api/sandworms/#ref-urgent-sandworm-field-validation">api/sandworms.md:23</a>)
+    </h4>
+    <p>Validate sandworm data with Fremen knowledge keepers</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-prediction-disclaimer"></span>
+    <h4>
+        prediction-disclaimer (<a href="../api/sandworms/#ref-urgent-prediction-disclaimer">api/sandworms.md:76</a>)
+    </h4>
+    <p>Add legal disclaimer about prediction limitations</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-fremen-authentication"></span>
+    <h4>
+        fremen-authentication (<a href="../api/sandworms/#ref-urgent-fremen-authentication">api/sandworms.md:122</a>)
+    </h4>
+    <p>Implement Fremen-specific auth before enabling</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-safety-guidelines"></span>
+    <h4>
+        safety-guidelines (<a href="../api/sandworms/#ref-urgent-safety-guidelines">api/sandworms.md:150</a>)
+    </h4>
+    <p>Publish comprehensive safety guidelines</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-sandworm-nodejs"></span>
+    <h4>
+        sandworm-nodejs (<a href="../getting-started/installation/#ref-urgent-sandworm-nodejs">getting-started/installation.md:25</a>)
+    </h4>
+    <p>Node 16 is older than some sandworms - update minimum to Node 18</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-harkonnen-security"></span>
+    <h4>
+        harkonnen-security (<a href="../getting-started/installation/#ref-urgent-harkonnen-security">getting-started/installation.md:62</a>)
+    </h4>
+    <p>Review Harkonnen security protocols before Baron's next visit</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-storm-handling"></span>
+    <h4>
+        storm-handling (<a href="../getting-started/installation/#ref-urgent-storm-handling">getting-started/installation.md:94</a>)
+    </h4>
+    <p>Add storm-resilient request retry logic</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-choam-reporting-deadline"></span>
+    <h4>
+        choam-reporting-deadline (<a href="../getting-started/quickstart/#ref-urgent-choam-reporting-deadline">getting-started/quickstart.md:40</a>)
+    </h4>
+    <p>CHOAM requires reporting within 1 Imperial hour</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-fremen-diplomacy"></span>
+    <h4>
+        fremen-diplomacy (<a href="../getting-started/quickstart/#ref-urgent-fremen-diplomacy">getting-started/quickstart.md:52</a>)
+    </h4>
+    <p>Review Fremen relations API with Duke Leto before Atreides takeover</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-sacred-site-map"></span>
+    <h4>
+        sacred-site-map (<a href="../getting-started/quickstart/#ref-urgent-sacred-site-map">getting-started/quickstart.md:79</a>)
+    </h4>
+    <p>Add sacred site boundaries to API before Fremen complaints escalate</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-enterprise-limits"></span>
+    <h4>
+        enterprise-limits (<a href="../guides/rate-limiting/#ref-urgent-enterprise-limits">guides/rate-limiting.md:17</a>)
+    </h4>
+    <p>Confirm enterprise limits with sales team</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-retry-after-enforcement"></span>
+    <h4>
+        retry-after-enforcement (<a href="../guides/rate-limiting/#ref-urgent-retry-after-enforcement">guides/rate-limiting.md:62</a>)
+    </h4>
+    <p>Consider enforcing stricter retry-after behavior</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-batch-api"></span>
+    <h4>
+        batch-api (<a href="../guides/rate-limiting/#ref-urgent-batch-api">guides/rate-limiting.md:86</a>)
+    </h4>
+    <p>Implement batch API endpoints</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-feedback-loop-detection"></span>
+    <h4>
+        feedback-loop-detection (<a href="../guides/rate-limiting/#ref-urgent-feedback-loop-detection">guides/rate-limiting.md:138</a>)
+    </h4>
+    <p>Add feedback loop detection</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-event-docs"></span>
+    <h4>
+        event-docs (<a href="../guides/webhooks/#ref-urgent-event-docs">guides/webhooks.md:19</a>)
+    </h4>
+    <p>Complete event documentation before stable release</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-signature-docs"></span>
+    <h4>
+        signature-docs (<a href="../guides/webhooks/#ref-urgent-signature-docs">guides/webhooks.md:39</a>)
+    </h4>
+    <p>Document signature verification thoroughly</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-security-warning"></span>
+    <h4>
+        security-warning (<a href="../guides/webhooks/#ref-urgent-security-warning">guides/webhooks.md:81</a>)
+    </h4>
+    <p>Add prominent security warning</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-document-limits"></span>
+    <h4>
+        document-limits (<a href="../guides/webhooks/#ref-urgent-document-limits">guides/webhooks.md:145</a>)
+    </h4>
+    <p>Document all webhook limits clearly</p>
+</div>
+
+<div class="editor-note-entry">
+    <span id="agg-urgent-https-requirement"></span>
+    <h4>
+        https-requirement (<a href="../guides/webhooks/#ref-urgent-https-requirement">guides/webhooks.md:172</a>)
+    </h4>
+    <p>Make HTTPS mandatory for production webhooks</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

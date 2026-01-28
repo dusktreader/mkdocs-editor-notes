@@ -66,6 +66,14 @@ docs/build:  ## Build the documentation
 docs/serve:  ## Build the docs and start a local dev server
 	uv run mkdocs serve --config-file=docs/mkdocs.yaml --dev-addr=localhost:10000
 
+.PHONY: example/build
+example/build:  ## Build the example site
+	cd example && uv run mkdocs build --strict
+
+.PHONY: example/serve
+example/serve:  ## Build the example site and start a local dev server
+	cd example && uv run mkdocs serve --dev-addr=localhost:10001
+
 
 # ==== Other Commands ==================================================================================================
 .PHONY: publish

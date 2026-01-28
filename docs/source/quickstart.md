@@ -1,11 +1,13 @@
 # Quickstart
 
+
 ## Requirements
 
 * Python 3.12 to 3.14
 
 
 ## Installation
+
 
 ### Install from pypi:
 
@@ -18,6 +20,7 @@ pip install mkdocs-editor-notes
 
 ## Using
 
+
 ### Basic Setup
 
 Add the plugin to your `mkdocs.yml` configuration:[^todo:verify-config]
@@ -29,11 +32,16 @@ plugins:
   - editor-notes
 ```
 
+
 ### Adding Editor Notes
 
-Editor notes use a syntax similar to footnotes.[^ponder:syntax-alternative] You can add different types of notes:
+Editor notes use a syntax similar to footnotes.[^ponder:syntax-alternative] You can add different types of notes.
+
+**Note:** Labels (like `:expand-docs` or `:scalability`) are optional. You can use unlabeled notes or add specific
+labels for better organization.
 
 [^ponder:syntax-alternative]: Should we support alternative syntax formats?
+
 
 #### Todo Notes
 
@@ -47,6 +55,7 @@ This feature needs more documentation.[^todo:expand-docs]
 [^todo:expand-docs]: Add examples and API reference
 ```
 
+
 #### Ponder Notes
 
 Use ponder notes for questions or things to think about:[^ponder]
@@ -59,6 +68,7 @@ This approach might not scale well.[^ponder:scalability]
 [^ponder:scalability]: Should we benchmark this with larger datasets?
 ```
 
+
 #### Improve Notes
 
 Mark areas for improvement:
@@ -68,6 +78,7 @@ The error handling here is basic.[^improve:error-handling]
 
 [^improve:error-handling]: Add specific error types and better messages
 ```
+
 
 #### Research Notes
 
@@ -80,6 +91,7 @@ We could use a different markdown parser.[^research:parser-options]
 
 [^research:parser-options]: Research python-markdown alternatives
 ```
+
 
 #### Custom Note Types
 
@@ -99,6 +111,22 @@ I have a question about this.[^question:performance]
 
 Custom types like `bug` and `question` automatically appear in a "Custom Notes" section with ❗ emoji by default.
 
+
+### Unlabeled Notes
+
+Labels are optional. You can create notes without specific labels:
+
+```markdown
+This needs some thought.[^ponder]
+
+[^ponder]: Should we consider a different approach here?
+```
+
+Without a label, the note is still tracked and displayed in the aggregator, but won't have a specific identifier
+beyond its type.
+
+
 ### Viewing Editor Notes
 
-All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to `/editor-notes/` to view all notes grouped by type with links back to their source locations.
+All editor notes are automatically collected and aggregated into a single page. After building your site, navigate to
+`/editor-notes/` to view all notes grouped by type with links back to their source locations.

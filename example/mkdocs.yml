@@ -1,0 +1,43 @@
+site_name: SpiceFlow API
+site_description: Track and manage the flow of melange across Arrakis
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+
+plugins:
+  - search
+  - editor-notes:
+      show_markers: true
+      note_type_emojis:
+        urgent: "🚨"
+        idea: "💡"
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+  - API Reference:
+    - Authentication: api/authentication.md
+    - Spice Harvests: api/harvests.md
+    - Sandworm Tracking: api/sandworms.md
+  - Guides:
+    - Webhooks: guides/webhooks.md
+    - Rate Limiting: guides/rate-limiting.md
+  - Deployment: deployment.md
+  - Editor Notes: editor-notes.md

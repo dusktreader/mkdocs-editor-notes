@@ -1,0 +1,1985 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Track and manage the flow of melange across Arrakis">
+      
+      
+      
+      
+        <link rel="prev" href="../harvests/">
+      
+      
+        <link rel="next" href="../../guides/webhooks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Sandworm Tracking - SpiceFlow API</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <style>
+            /* CSS Custom Properties for theme integration */
+:root {
+    /* Tooltip colors - fallback to neutral dark/light */
+    --editor-note-tooltip-bg: var(--md-default-fg-color--light, #333);
+    --editor-note-tooltip-fg: var(--md-default-bg-color, white);
+
+    /* Highlight colors - fallback to soft yellow */
+    --editor-note-highlight-bg: var(--md-accent-fg-color--transparent, rgba(255, 253, 231, 0.5));
+    --editor-note-highlight-intense: var(--md-accent-fg-color, #ffeb3b);
+}
+
+/* Fast tooltip display */
+.editor-note-marker a {
+    position: relative;
+}
+.editor-note-marker a[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: var(--editor-note-tooltip-bg);
+    color: var(--editor-note-tooltip-fg);
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 1000;
+    margin-bottom: 4px;
+    transition: none;
+    animation: none;
+}
+/* Remove default tooltip */
+.editor-note-marker a[title] {
+    position: relative;
+}
+/* Highlight reference anchors when targeted (from aggregator links) */
+span[id^="ref-"]:target {
+    display: inline;
+}
+/* Highlight aggregator entries when targeted (from marker links) */
+span[id^="agg-"]:target {
+    animation: none;
+}
+.editor-note-highlight {
+    background-color: var(--editor-note-highlight-bg);
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 4px;
+}
+.editor-note-highlight-fade {
+    background-color: transparent;
+    transition: background-color 2s ease-out;
+}
+@keyframes highlight-fade {
+    0% { background-color: var(--editor-note-highlight-intense); }
+    100% { background-color: transparent; }
+}
+
+            </style>
+
+            <script>
+            // Editor Notes Configuration
+            window.EDITOR_NOTES_CONFIG = {
+                highlightDuration: 3000,
+                highlightFadeDuration: 2000
+            };
+            </script>
+
+            <script>
+            function clearAllHighlights() {
+    document.querySelectorAll('.editor-note-highlight').forEach(el => {
+        el.classList.remove('editor-note-highlight');
+        el.classList.remove('editor-note-highlight-fade');
+    });
+}
+
+function highlightTarget() {
+    clearAllHighlights();
+
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const target = document.querySelector(hash);
+    if (!target) {
+        console.warn(`[editor-notes] Target element not found for hash: ${hash}`);
+        return;
+    }
+
+    let elementToHighlight = null;
+
+    const config = window.EDITOR_NOTES_CONFIG || {};
+    const HIGHLIGHT_DURATION = config.highlightDuration || 3000; // Stay at full color for 3 seconds
+    const FADE_DURATION = config.highlightFadeDuration || 2000; // Fade for 2 seconds
+
+    if (target.id.startsWith('ref-')) {
+        elementToHighlight = target.parentElement;
+    } else if (target.id.startsWith('agg-')) {
+        elementToHighlight = target.closest('.editor-note-entry');
+    } else {
+        console.warn(`[editor-notes] Unrecognized target ID format: ${target.id} (expected 'ref-*' or 'agg-*')`);
+    }
+
+    if (elementToHighlight) {
+        elementToHighlight.classList.add('editor-note-highlight');
+        setTimeout(() => {
+            elementToHighlight.classList.add('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION);
+        setTimeout(() => {
+            elementToHighlight.classList.remove('editor-note-highlight');
+            elementToHighlight.classList.remove('editor-note-highlight-fade');
+        }, HIGHLIGHT_DURATION + FADE_DURATION);
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+window.addEventListener('load', highlightTarget);
+window.addEventListener('hashchange', highlightTarget);
+
+            </script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sandworm-tracking-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="SpiceFlow API" class="md-header__button md-logo" aria-label="SpiceFlow API" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SpiceFlow API
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sandworm Tracking
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="SpiceFlow API" class="md-nav__button md-logo" aria-label="SpiceFlow API" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SpiceFlow API
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../harvests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spice Harvests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandworm Tracking
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandworm Tracking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-are-sandworms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are Sandworms?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What are Sandworms?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-facts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Facts 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-sandworm-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Sandworm Object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Sandworm Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-descriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Descriptions 🚨
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-nearby-sandworms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Nearby Sandworms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List Nearby Sandworms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-specific-sandworm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get Specific Sandworm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wormsign-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wormsign Prediction 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wormsign Prediction 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#report-wormsign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report Wormsign ❗
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Report Wormsign ❗">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sandworm-behavior-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandworm Behavior Patterns 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sandworm Behavior Patterns 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thumper-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thumper Integration 💡
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Thumper Integration 💡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maker-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maker Hooks ⏳
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emergency-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emergency Alerts 🛠️
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical Data 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Historical Data 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#safety-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety First
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respecting-shai-hulud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respecting Shai-Hulud 🛠️
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/rate-limiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../editor-notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Editor Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-are-sandworms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are Sandworms?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What are Sandworms?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-facts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Facts 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-sandworm-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Sandworm Object
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Sandworm Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-descriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Descriptions 🚨
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-nearby-sandworms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Nearby Sandworms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="List Nearby Sandworms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-specific-sandworm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get Specific Sandworm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wormsign-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wormsign Prediction 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wormsign Prediction 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#report-wormsign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report Wormsign ❗
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Report Wormsign ❗">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sandworm-behavior-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandworm Behavior Patterns 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sandworm Behavior Patterns 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thumper-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thumper Integration 💡
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Thumper Integration 💡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-body_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Body
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maker-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maker Hooks ⏳
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emergency-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emergency Alerts 🛠️
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical Data 🔍
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Historical Data 🔍">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#query-parameters_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#safety-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety First
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respecting-shai-hulud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respecting Shai-Hulud 🛠️
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="sandworm-tracking-api">Sandworm Tracking API</h1>
+<p><span id="ref-urgent-fremen-approval"></span>Monitor, track, and predict sandworm (Shai-Hulud) movements across Arrakis.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-urgent-fremen-approval" title="urgent: fremen-approval">         🚨     </a> </sup></p>
+<ul>
+<li><span id="ref-ponder-years-calculation"></span><em>Status:</em>* ✅ Stable - Trusted by spice harvesters for 80+ years<sup class="editor-note-marker">     <a href="../../editor-notes#agg-ponder-years-calculation" title="ponder: years-calculation">         ⏳     </a> </sup></li>
+</ul>
+<h2 id="what-are-sandworms">What are Sandworms?</h2>
+<p><span id="ref-research-sandworm-biology"></span>Sandworms (called "Shai-Hulud" or "Old Man of the Desert" by the Fremen) are massive creatures that patrol the deep desert of Arrakis.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-sandworm-biology" title="research: sandworm-biology">         🔍     </a> </sup> They are attracted to rhythmic vibrations and are highly territorial.</p>
+<h3 id="key-facts"><span id="ref-idea-sandworm-field-guide"></span> Key Facts<sup class="editor-note-marker">     <a href="../../editor-notes#agg-idea-sandworm-field-guide" title="idea: sandworm-field-guide">         💡     </a> </sup></h3>
+<ul>
+<li><span id="ref-question-largest-recorded"></span><strong>Size</strong>: 100-400 meters in length<sup class="editor-note-marker">     <a href="../../editor-notes#agg-question-largest-recorded" title="question: largest-recorded">         ❗     </a> </sup></li>
+<li><strong>Speed</strong>: Up to 40 km/h in open sand</li>
+<li><strong>Lifespan</strong>: Unknown, possibly thousands of years</li>
+<li><span id="ref-todo-attraction-research"></span><strong>Attraction</strong>: Rhythmic vibrations, especially thumpers<sup class="editor-note-marker">     <a href="../../editor-notes#agg-todo-attraction-research" title="todo: attraction-research">         ✅     </a> </sup></li>
+<li><strong>Danger Level</strong>: Extreme - can swallow a harvester whole</li>
+</ul>
+<h2 id="the-sandworm-object">The Sandworm Object</h2>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;worm_shai_hulud_42&quot;,
+  &quot;estimated_length_meters&quot;: 350,
+  &quot;estimated_age_years&quot;: 800,
+  &quot;last_sighting&quot;: {
+    &quot;timestamp&quot;: &quot;10191-07-15T08:45:00Z&quot;,
+    &quot;location&quot;: {&quot;latitude&quot;: 22.8, &quot;longitude&quot;: -45.1},
+    &quot;reported_by&quot;: &quot;Fremen scout&quot;,
+    &quot;confidence&quot;: &quot;high&quot;
+  },
+  &quot;movement_pattern&quot;: {
+    &quot;direction&quot;: &quot;northeast&quot;,
+    &quot;speed_kmh&quot;: 35,
+    &quot;predicted_path&quot;: [...],
+    &quot;erratic_behavior&quot;: false
+  },
+  &quot;fremen_designation&quot;: &quot;Old Father&quot;,
+  &quot;threat_level&quot;: &quot;extreme&quot;,
+  &quot;territorial_range_km&quot;: 50,
+  &quot;last_fed_hours_ago&quot;: 12,
+  &quot;rings_visible&quot;: 23,
+  &quot;has_maker_hooks&quot;: false
+}
+</code></pre>
+<h3 id="field-descriptions"><span id="ref-urgent-sandworm-field-validation"></span> Field Descriptions<sup class="editor-note-marker">     <a href="../../editor-notes#agg-urgent-sandworm-field-validation" title="urgent: sandworm-field-validation">         🚨     </a> </sup></h3>
+<ul>
+<li><span id="ref-question-worm-tagging"></span><code>id</code> (string) - Unique worm identifier<sup class="editor-note-marker">     <a href="../../editor-notes#agg-question-worm-tagging" title="question: worm-tagging">         ❗     </a> </sup></li>
+<li><code>estimated_length_meters</code> - Length based on ring count</li>
+<li><span id="ref-research-aging-methods"></span><code>estimated_age_years</code> - Age estimate (inexact)<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-aging-methods" title="research: aging-methods">         🔍     </a> </sup></li>
+<li><code>fremen_designation</code> - Name given by Fremen (if known)</li>
+<li><span id="ref-improve-ring-counting"></span><code>rings_visible</code> - Body segment rings (age indicator)<sup class="editor-note-marker">     <a href="../../editor-notes#agg-improve-ring-counting" title="improve: ring-counting">         🛠️     </a> </sup></li>
+<li><span id="ref-ponder-maker-ethics"></span><code>has_maker_hooks</code> - Whether worm has been ridden by Fremen<sup class="editor-note-marker">     <a href="../../editor-notes#agg-ponder-maker-ethics" title="ponder: maker-ethics">         ⏳     </a> </sup></li>
+</ul>
+<h2 id="list-nearby-sandworms">List Nearby Sandworms</h2>
+<pre><code class="language-http">GET /v2/sandworms
+</code></pre>
+<h3 id="query-parameters">Query Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span id="ref-todo-radius-search"></span></td>
+<td><code>latitude</code></td>
+<td>float</td>
+</tr>
+<tr>
+<td><code>longitude</code></td>
+<td>float</td>
+<td>Center longitude</td>
+</tr>
+<tr>
+<td><code>radius_km</code></td>
+<td>float</td>
+<td>Search radius (default: 50km, max: 500km)</td>
+</tr>
+<tr>
+<td><span id="ref-question-size-filter"></span></td>
+<td><code>min_size</code></td>
+<td>integer</td>
+</tr>
+<tr>
+<td><code>threat_level</code></td>
+<td>string</td>
+<td><code>low</code>, <code>medium</code>, <code>high</code>, <code>extreme</code></td>
+</tr>
+<tr>
+<td><code>active_only</code></td>
+<td>boolean</td>
+<td>Only show worms active in last 24 hours</td>
+</tr>
+<tr>
+<td><span id="ref-improve-verification-system"></span></td>
+<td><code>fremen_verified</code></td>
+<td>boolean</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-request">Example Request</h3>
+<pre><code class="language-bash">curl &quot;https://api.spiceflow.arrakis/v2/sandworms?latitude=22.5&amp;longitude=-45.3&amp;radius_km=25&quot; \
+  -H &quot;Authorization: Bearer sf_choam_your_key&quot;
+</code></pre>
+<h3 id="response">Response</h3>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: &quot;worm_42&quot;,
+      &quot;estimated_length_meters&quot;: 350,
+      &quot;distance_from_query_km&quot;: 12.5,
+      &quot;bearing_degrees&quot;: 45,
+      &quot;threat_level&quot;: &quot;extreme&quot;,
+      &quot;eta_minutes&quot;: 20
+    }
+  ],
+  &quot;warnings&quot;: [
+    &quot;2 extremely large worms detected within 50km&quot;,
+    &quot;Coriolis storm may affect worm behavior in next 6 hours&quot;
+  ],
+  &quot;fremen_advice&quot;: &quot;Three worms in formation - very rare. Suggest avoiding area.&quot;
+}
+</code></pre>
+<h2 id="get-specific-sandworm">Get Specific Sandworm</h2>
+<pre><code class="language-http">GET /v2/sandworms/{worm_id}
+</code></pre>
+<p><span id="ref-idea-worm-profiles"></span>Returns detailed information about a specific sandworm, including movement history and predictions.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-idea-worm-profiles" title="idea: worm-profiles">         💡     </a> </sup></p>
+<h2 id="wormsign-prediction"><span id="ref-research-prediction-accuracy"></span> Wormsign Prediction<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-prediction-accuracy" title="research: prediction-accuracy">         🔍     </a> </sup></h2>
+<pre><code class="language-http">POST /v2/sandworms/predict
+</code></pre>
+<p>Predict sandworm activity for a given location and time window.</p>
+<h3 id="request-body">Request Body</h3>
+<pre><code class="language-json">{
+  &quot;location&quot;: {&quot;latitude&quot;: 22.5, &quot;longitude&quot;: -45.3},
+  &quot;time_window_hours&quot;: 4,
+  &quot;harvest_planned&quot;: true,
+  &quot;thumper_pattern&quot;: &quot;standard&quot;
+}
+</code></pre>
+<h3 id="response_1">Response</h3>
+<pre><code class="language-json">{
+  &quot;probability_encounter&quot;: 0.65,
+  &quot;risk_level&quot;: &quot;high&quot;,
+  &quot;predicted_worms&quot;: [
+    {
+      &quot;id&quot;: &quot;worm_42&quot;,
+      &quot;eta_minutes&quot;: 45,
+      &quot;confidence&quot;: 0.8
+    }
+  ],
+  &quot;recommendations&quot;: [
+    &quot;Deploy extra thumpers 500m north&quot;,
+    &quot;Keep carryall on standby&quot;,
+    &quot;Consider Fremen guide for this operation&quot;
+  ],
+  &quot;fremen_wisdom&quot;: &quot;The worms smell water. Your crew leaks.&quot;
+}
+</code></pre>
+<ul>
+<li><span id="ref-urgent-prediction-disclaimer"></span><em>Note:</em>* Predictions are probabilistic. Always monitor actively during operations.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-urgent-prediction-disclaimer" title="urgent: prediction-disclaimer">         🚨     </a> </sup></li>
+</ul>
+<h2 id="report-wormsign"><span id="ref-question-crowdsourced-data"></span> Report Wormsign<sup class="editor-note-marker">     <a href="../../editor-notes#agg-question-crowdsourced-data" title="question: crowdsourced-data">         ❗     </a> </sup></h2>
+<pre><code class="language-http">POST /v2/sandworms/sightings
+</code></pre>
+<p>Report a sandworm sighting (helps improve tracking for everyone).</p>
+<h3 id="request-body_1">Request Body</h3>
+<pre><code class="language-json">{
+  &quot;timestamp&quot;: &quot;10191-07-15T09:30:00Z&quot;,
+  &quot;location&quot;: {&quot;latitude&quot;: 22.6, &quot;longitude&quot;: -45.2},
+  &quot;estimated_size&quot;: &quot;massive&quot;,
+  &quot;distance_meters&quot;: 800,
+  &quot;movement_direction&quot;: &quot;northwest&quot;,
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;evidence&quot;: {
+    &quot;wormsign_observed&quot;: true,
+    &quot;rhythmic_disturbance&quot;: true,
+    &quot;sand_displacement&quot;: true,
+    &quot;thumper_response&quot;: &quot;aggressive&quot;
+  },
+  &quot;reporter_credentials&quot;: &quot;harvester_crew_licensed&quot;
+}
+</code></pre>
+<h3 id="response_2">Response</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;sighting_789&quot;,
+  &quot;verified&quot;: true,
+  &quot;worm_id&quot;: &quot;worm_42&quot;,
+  &quot;contribution_points&quot;: 10,
+  &quot;bounty_earned_solaris&quot;: 500
+}
+</code></pre>
+<p><span id="ref-improve-bounty-structure"></span>CHOAM pays 500 solaris per verified wormsign report!<sup class="editor-note-marker">     <a href="../../editor-notes#agg-improve-bounty-structure" title="improve: bounty-structure">         🛠️     </a> </sup></p>
+<h2 id="sandworm-behavior-patterns"><span id="ref-research-behavior-analysis"></span> Sandworm Behavior Patterns<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-behavior-analysis" title="research: behavior-analysis">         🔍     </a> </sup></h2>
+<pre><code class="language-http">GET /v2/sandworms/{worm_id}/behavior
+</code></pre>
+<p>Analyze historical behavior patterns for a specific sandworm.</p>
+<h3 id="response_3">Response</h3>
+<pre><code class="language-json">{
+  &quot;worm_id&quot;: &quot;worm_42&quot;,
+  &quot;behaviors&quot;: {
+    &quot;territorial&quot;: true,
+    &quot;aggressive_rating&quot;: 8.5,
+    &quot;thumper_sensitivity&quot;: &quot;high&quot;,
+    &quot;typical_patrol_pattern&quot;: &quot;circular&quot;,
+    &quot;hunting_times&quot;: [&quot;dawn&quot;, &quot;dusk&quot;],
+    &quot;avoids_areas&quot;: [&quot;rock_outcroppings&quot;, &quot;sietch_tabr_vicinity&quot;]
+  },
+  &quot;rider_history&quot;: {
+    &quot;has_been_ridden&quot;: true,
+    &quot;last_ridden&quot;: &quot;10188-03-22&quot;,
+    &quot;fremen_notes&quot;: &quot;Stubborn. Requires experienced rider.&quot;
+  },
+  &quot;danger_assessment&quot;: &quot;This worm is particularly aggressive toward harvesters. Recommend 1km safety margin.&quot;
+}
+</code></pre>
+<h2 id="thumper-integration"><span id="ref-idea-smart-thumpers"></span> Thumper Integration<sup class="editor-note-marker">     <a href="../../editor-notes#agg-idea-smart-thumpers" title="idea: smart-thumpers">         💡     </a> </sup></h2>
+<pre><code class="language-http">POST /v2/sandworms/thumper-response
+</code></pre>
+<p>Test how a specific sandworm might respond to different thumper patterns.</p>
+<h3 id="request-body_2">Request Body</h3>
+<pre><code class="language-json">{
+  &quot;worm_id&quot;: &quot;worm_42&quot;,
+  &quot;thumper_pattern&quot;: &quot;aggressive&quot;,
+  &quot;thumper_count&quot;: 3,
+  &quot;thumper_spacing_meters&quot;: 200
+}
+</code></pre>
+<h3 id="response_4">Response</h3>
+<pre><code class="language-json">{
+  &quot;effectiveness&quot;: 0.75,
+  &quot;predicted_worm_behavior&quot;: &quot;attracted_but_cautious&quot;,
+  &quot;optimal_harvest_window_minutes&quot;: 180,
+  &quot;risks&quot;: [
+    &quot;Worm may investigate thumpers directly&quot;,
+    &quot;Aggressive pattern may attract additional worms&quot;
+  ],
+  &quot;fremen_recommendation&quot;: &quot;Standard pattern is safer for this worm&quot;
+}
+</code></pre>
+<h2 id="maker-hooks"><span id="ref-ponder-maker-hook-ethics"></span> Maker Hooks<sup class="editor-note-marker">     <a href="../../editor-notes#agg-ponder-maker-hook-ethics" title="ponder: maker-hook-ethics">         ⏳     </a> </sup></h2>
+<pre><code class="language-http">GET /v2/sandworms/rideable
+</code></pre>
+<ul>
+<li><span id="ref-urgent-fremen-authentication"></span><em>Fremen-Only Endpoint</em>* - Requires special authorization.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-urgent-fremen-authentication" title="urgent: fremen-authentication">         🚨     </a> </sup></li>
+</ul>
+<p>Returns sandworms suitable for riding (maker hooks).</p>
+<ul>
+<li><span id="ref-question-cultural-appropriation"></span><em>Note:</em>* This endpoint is restricted out of respect for Fremen traditions and for safety reasons.<sup class="editor-note-marker">     <a href="../../editor-notes#agg-question-cultural-appropriation" title="question: cultural-appropriation">         ❗     </a> </sup></li>
+</ul>
+<h2 id="emergency-alerts"><span id="ref-improve-alert-system"></span> Emergency Alerts<sup class="editor-note-marker">     <a href="../../editor-notes#agg-improve-alert-system" title="improve: alert-system">         🛠️     </a> </sup></h2>
+<p>Subscribe to automatic wormsign alerts via <a href="../../guides/webhooks/">Webhooks</a>:</p>
+<pre><code class="language-python">client.webhooks.create(
+    url=&quot;https://yourapp.arrakis/wormsign&quot;,
+    events=[&quot;sandworm.detected&quot;, &quot;sandworm.approaching&quot;],
+    filters={
+        &quot;location_radius_km&quot;: 10,
+        &quot;min_threat_level&quot;: &quot;high&quot;
+    }
+)
+</code></pre>
+<h2 id="historical-data"><span id="ref-research-historical-sightings"></span> Historical Data<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-historical-sightings" title="research: historical-sightings">         🔍     </a> </sup></h2>
+<pre><code class="language-http">GET /v2/sandworms/history
+</code></pre>
+<p>Access historical sandworm activity data (useful for pattern analysis).</p>
+<h3 id="query-parameters_1">Query Parameters</h3>
+<ul>
+<li><code>region</code> - Geographic region</li>
+<li><code>start_date</code> / <code>end_date</code> - Date range (Imperial calendar)</li>
+<li><span id="ref-todo-historical-filters"></span><code>min_size</code> - Filter by size<sup class="editor-note-marker">     <a href="../../editor-notes#agg-todo-historical-filters" title="todo: historical-filters">         ✅     </a> </sup></li>
+</ul>
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="safety-first">Safety First</h3>
+<ul>
+<li><span id="ref-urgent-safety-guidelines"></span>Never ignore wormsign within 2km<sup class="editor-note-marker">     <a href="../../editor-notes#agg-urgent-safety-guidelines" title="urgent: safety-guidelines">         🚨     </a> </sup></li>
+<li>Always have carryall ready for extraction</li>
+<li>Trust Fremen advice - they know the worms best</li>
+<li>When in doubt, abort the harvest</li>
+</ul>
+<h3 id="respecting-shai-hulud"><span id="ref-improve-fremen-culture-docs"></span> Respecting Shai-Hulud<sup class="editor-note-marker">     <a href="../../editor-notes#agg-improve-fremen-culture-docs" title="improve: fremen-culture-docs">         🛠️     </a> </sup></h3>
+<p>The Fremen revere sandworms as sacred. When using this API:</p>
+<ul>
+<li>Don't use disrespectful terminology</li>
+<li><span id="ref-idea-fremen-partnership"></span>Honor Fremen knowledge and expertise<sup class="editor-note-marker">     <a href="../../editor-notes#agg-idea-fremen-partnership" title="idea: fremen-partnership">         💡     </a> </sup></li>
+<li>Report any worm injuries to Fremen authorities</li>
+<li>Never disturb worms unnecessarily</li>
+</ul>
+<h2 id="limitations">Limitations</h2>
+<ul>
+<li><span id="ref-research-fremen-vs-ai"></span>Predictions are 70-85% accurate (Fremen intuition is still superior)<sup class="editor-note-marker">     <a href="../../editor-notes#agg-research-fremen-vs-ai" title="research: fremen-vs-ai">         🔍     </a> </sup></li>
+<li>Coriolis storms interfere with tracking</li>
+<li><span id="ref-question-stealth-worms"></span>Some worms avoid detection (stealth worms?)<sup class="editor-note-marker">     <a href="../../editor-notes#agg-question-stealth-worms" title="question: stealth-worms">         ❗     </a> </sup></li>
+<li><span id="ref-todo-sandtrout-tracking"></span>Baby sandworms ("sandtrout") not tracked by this API<sup class="editor-note-marker">     <a href="../../editor-notes#agg-todo-sandtrout-tracking" title="todo: sandtrout-tracking">         ✅     </a> </sup></li>
+</ul>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../../guides/webhooks/">Set up Wormsign Webhooks</a></li>
+<li><a href="../harvests/">Learn about Spice Harvests</a></li>
+<li><a href="../../guides/rate-limiting/">Understand Rate Limiting</a></li>
+</ul>
+<hr />
+<ul>
+<li><span id="ref-ponder-api-spirituality"></span><em>"Bless the Maker and His water. Bless the coming and going of Him."</em>* - Fremen prayer<sup class="editor-note-marker">     <a href="../../editor-notes#agg-ponder-api-spirituality" title="ponder: api-spirituality">         ⏳     </a> </sup></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

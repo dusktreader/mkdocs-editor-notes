@@ -1,3 +1,14 @@
+/* CSS Custom Properties for theme integration */
+:root {
+    /* Tooltip colors - fallback to neutral dark/light */
+    --editor-note-tooltip-bg: var(--md-default-fg-color--light, #333);
+    --editor-note-tooltip-fg: var(--md-default-bg-color, white);
+
+    /* Highlight colors - fallback to soft yellow */
+    --editor-note-highlight-bg: var(--md-accent-fg-color--transparent, rgba(255, 253, 231, 0.5));
+    --editor-note-highlight-intense: var(--md-accent-fg-color, #ffeb3b);
+}
+
 /* Fast tooltip display */
 .editor-note-marker a {
     position: relative;
@@ -9,8 +20,8 @@
     left: 50%;
     transform: translateX(-50%);
     padding: 4px 8px;
-    background: #333;
-    color: white;
+    background: var(--editor-note-tooltip-bg);
+    color: var(--editor-note-tooltip-fg);
     font-size: 12px;
     white-space: nowrap;
     border-radius: 4px;
@@ -23,17 +34,16 @@
 .editor-note-marker a[title] {
     position: relative;
 }
-/* Highlight targeted paragraphs */
-span[id^="editor-note-para"]:target {
+/* Highlight reference anchors when targeted (from aggregator links) */
+span[id^="ref-"]:target {
     display: inline;
 }
-/* Highlight parent of targeted anchor */
-span[id^="editor-note-para"]:target,
-span[id^="note-editor-note-para"]:target {
+/* Highlight aggregator entries when targeted (from marker links) */
+span[id^="agg-"]:target {
     animation: none;
 }
 .editor-note-highlight {
-    background-color: rgba(255, 253, 231, 0.5);
+    background-color: var(--editor-note-highlight-bg);
     padding: 4px 8px;
     margin: -4px -8px;
     border-radius: 4px;
@@ -43,6 +53,6 @@ span[id^="note-editor-note-para"]:target {
     transition: background-color 2s ease-out;
 }
 @keyframes highlight-fade {
-    0% { background-color: #ffeb3b; }
+    0% { background-color: var(--editor-note-highlight-intense); }
     100% { background-color: transparent; }
 }

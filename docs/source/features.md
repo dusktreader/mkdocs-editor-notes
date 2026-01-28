@@ -1,10 +1,14 @@
 # Features
 
+
 ## Overview
 
-mkdocs-editor-notes allows you to embed editorial notes directly in your markdown documentation.[^todo:feature-comparison] These notes are collected and displayed on a dedicated aggregator page while being optionally visible or hidden in the source pages themselves.
+mkdocs-editor-notes allows you to embed editorial notes directly in your markdown
+documentation.[^todo:feature-comparison] These notes are collected and displayed on a dedicated aggregator page while
+being optionally visible or hidden in the source pages themselves.
 
 [^todo:feature-comparison]: Add comparison with other documentation note-taking approaches
+
 
 ## Note Types
 
@@ -14,8 +18,9 @@ The plugin supports four fixed note types with default emojis:[^bug:emoji-render
 
 - **✅ todo**: Tasks that need to be completed
 - **💭 ponder**: Questions or considerations
-- **⚡ improve**: Improvement suggestions  
+- **⚡ improve**: Improvement suggestions
 - **🔍 research**: Research tasks
+
 
 ### Custom Note Types
 
@@ -51,6 +56,7 @@ What about this?[^question:scaling]
 
 Both `bug` and `question` are automatically recognized as custom types and will appear in the aggregator.
 
+
 ## Labeled Notes
 
 Notes can have optional labels for better organization:[^ponder:label-format]
@@ -65,26 +71,29 @@ This paragraph has a labeled note.[^todo:fix-typo]
 
 Labels make it easier to identify specific notes in the aggregator page and provide better context.
 
+
 ## Aggregator Page
 
 All notes are automatically collected into a single aggregator page at `/editor-notes/`:
 
 - Notes are grouped by type
 - Each note shows its label (if provided)
-- Links back to the source location  
-- Source paragraph is highlighted when navigating from aggregator[^research:highlight-methods]
+- Links back to the source location
+- Source paragraph is highlighted when navigating from aggregator
 
-The aggregator page is generated during the build and can be accessed by navigating directly to `/editor-notes/` in your browser.
+The aggregator page is generated during the build and can be accessed by navigating directly to `/editor-notes/` in
+your browser.
 
-[^research:highlight-methods]: Research best practices for scroll-to-highlight UX
 
 ## Paragraph Highlighting
 
-When clicking a link from the aggregator page to a source paragraph, the paragraph is automatically highlighted using CSS `:target` pseudo-class.[^improve:highlight-style]
+When clicking a link from the aggregator page to a source paragraph, the paragraph is automatically highlighted using
+CSS `:target` pseudo-class.[^improve:highlight-style]
 
 [^improve:highlight-style]: Make highlighting style configurable via CSS variables
 
 The highlight fades out after a few seconds for a better user experience.
+
 
 ## Configuration Options
 
@@ -100,6 +109,7 @@ plugins:
 
 When `false`, notes are invisible in source pages. When `true`, notes appear as superscript markers.
 
+
 ### note_types
 
 Define which note types are recognized:
@@ -109,11 +119,12 @@ plugins:
   - editor-notes:
       note_types:
         - todo
-        - ponder  
+        - ponder
         - improve
         - research
         - custom
 ```
+
 
 ### aggregator_page
 
@@ -127,6 +138,7 @@ plugins:
       aggregator_page: "notes/editor-notes.md"
 ```
 
+
 ### enable_highlighting
 
 Enable or disable paragraph highlighting:
@@ -136,3 +148,54 @@ plugins:
   - editor-notes:
       enable_highlighting: true  # default
 ```
+
+
+### highlight_duration
+
+Duration in milliseconds for the highlight to remain at full intensity before fading:
+
+```yaml
+plugins:
+  - editor-notes:
+      highlight_duration: 3000  # default (3 seconds)
+```
+
+
+### highlight_fade_duration
+
+Duration in milliseconds for the highlight fade-out transition:
+
+```yaml
+plugins:
+  - editor-notes:
+      highlight_fade_duration: 2000  # default (2 seconds)
+```
+
+These options allow you to customize the paragraph highlighting behavior when navigating from the aggregator page to
+source locations.
+
+
+## Theme Integration
+
+The plugin uses CSS custom properties that integrate with your MkDocs theme, especially the Material theme. The
+following CSS variables can be customized:
+
+
+### CSS Custom Properties
+
+You can override these in your own CSS to customize the appearance:
+
+```css
+:root {
+    /* Tooltip styling */
+    --editor-note-tooltip-bg: var(--md-default-fg-color--light, #333);
+    --editor-note-tooltip-fg: var(--md-default-bg-color, white);
+
+    /* Highlight colors */
+    --editor-note-highlight-bg: var(--md-accent-fg-color--transparent, rgba(255, 253, 231, 0.5));
+    --editor-note-highlight-intense: var(--md-accent-fg-color, #ffeb3b);
+}
+```
+
+The plugin automatically adapts to your theme's color scheme, including dark mode support when using the Material
+theme.
